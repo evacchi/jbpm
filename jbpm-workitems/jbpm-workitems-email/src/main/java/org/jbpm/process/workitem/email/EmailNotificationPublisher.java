@@ -91,6 +91,7 @@ public class EmailNotificationPublisher implements NotificationPublisher {
         Email email = new Email();
         Message message = new Message();
         message.setFrom(sender);
+        message.setReplyTo(sender);
 
         Set<String> emailRecipients = new LinkedHashSet<>();
         for (OrganizationalEntity entity : recipients) {            
@@ -104,10 +105,8 @@ public class EmailNotificationPublisher implements NotificationPublisher {
             throw new RuntimeException( "Email must have one or more recipients" );
         }
         for (String recipientAddress : emailRecipients) {            
-            Recipient recipient = new Recipient();
-            recipient.setEmail(recipientAddress);
-            recipient.setType( "To" );
-            mrecipients.addRecipient(recipient);            
+            Recipient recipient = Recipient.to(recipientAddress);
+            mrecipients.addRecipient(recipient);
         }
 
         // Fill message

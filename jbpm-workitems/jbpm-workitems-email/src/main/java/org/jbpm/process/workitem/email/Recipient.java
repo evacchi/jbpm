@@ -25,6 +25,29 @@ public class Recipient {
 
     private String mobile;
 
+    public static Recipient to(String email) {
+        Recipient recipient = new Recipient();
+        recipient.email = email;
+        recipient.type = "To";
+        return recipient;
+    }
+
+    public static Recipient cc(String email) {
+        Recipient recipient = new Recipient();
+        recipient.email = email;
+        recipient.type = "Cc";
+        return recipient;
+    }
+
+    public static Recipient bcc(String email) {
+        Recipient recipient = new Recipient();
+        recipient.email = email;
+        recipient.type = "Bcc";
+        return recipient;
+    }
+
+
+
     public Recipient() {
     }
 
