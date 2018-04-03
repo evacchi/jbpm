@@ -89,7 +89,7 @@ public class EmailNotificationPublisher implements NotificationPublisher {
     
     protected Email createEmail(String sender, String subject, Set<OrganizationalEntity> recipients, String body, Connection connection) {
         Email email = new Email();
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         message.setFrom(sender);
         message.setReplyTo(sender);
 

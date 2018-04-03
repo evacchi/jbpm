@@ -242,7 +242,7 @@ public class SendHtmlTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, emailPort, authUsername, authPassword);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItem<Message> workItem = new TypedWorkItemImpl<>(message);
 
         message.getRecipients().addRecipient(toAddress);
@@ -307,7 +307,7 @@ public class SendHtmlTest extends AbstractBaseTest {
     }
 
     private TypedWorkItem<Message> createEmailWorkItem(Recipient toAddress, String fromAddress, String testMethodName) {
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(toAddress);
         message.setFrom(fromAddress);
@@ -323,7 +323,7 @@ public class SendHtmlTest extends AbstractBaseTest {
 
     private TypedWorkItem<Message> createEmailWorkItemWithAttachment(Recipient toAddress, String fromAddress, String testMethodName) {
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>();
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         workItem.setParameters(message);
 
         message.getRecipients().addRecipient(toAddress);

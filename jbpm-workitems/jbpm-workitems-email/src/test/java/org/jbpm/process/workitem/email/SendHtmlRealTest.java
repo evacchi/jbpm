@@ -69,7 +69,7 @@ public class SendHtmlRealTest extends AbstractBaseTest {
         String testMethodName = Thread.currentThread().getStackTrace()[1].getMethodName();
         logger.info("{} : {}", testMethodName, uniqueTestNum);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to(toAddress));
         message.setFrom(fromAddress );
