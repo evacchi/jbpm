@@ -19,7 +19,9 @@ package org.jbpm.process.workitem.email;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -85,7 +87,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, emailPort, null, null);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
@@ -115,7 +117,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, emailPort, null, null);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         Recipients rcpts = message.getRecipients();
         rcpts.setRecipients(Arrays.asList(
@@ -164,7 +166,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, emailPort, null, null);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().setRecipients(Arrays.asList(
                 Recipient.to("person1@domain.com"),
@@ -213,7 +215,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, "123", null, null);
 
-        Message message = new Message();
+        SimpleMessage message = new SimpleMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
@@ -230,16 +232,23 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         EmailWorkItemHandler handler = new EmailWorkItemHandler();
         handler.setConnection(emailHost, emailPort, null, null);
 
-        // workItem.setParameter("Template", "basic-email");// <--?
-        // workItem.setParameter("Name", "John Doe");
 
-        Message message = new Message();
+
+        TemplatedMessage message = new TemplatedMessage();
         TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
         message.setReplyTo("person3@domain.com");
         message.setSubject("Subject 1");
-        message.setBody("Body 1");
+
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("Name", "John Doe");
+
+        message.setTemplateManager(TemplateManager.get());
+        message.setTemplate("basic-email");
+        message.setTemplateParameters(params);
+
 
         String expectedBody = "<html><body>Hello John Doe</body></html>";
 

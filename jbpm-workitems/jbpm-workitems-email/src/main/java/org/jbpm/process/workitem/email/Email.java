@@ -26,7 +26,7 @@ public class Email {
     }
 
     public Email() {
-        this.message = new Message();
+        this.message = new SimpleMessage();
         this.connection = new Connection();
     }
 
