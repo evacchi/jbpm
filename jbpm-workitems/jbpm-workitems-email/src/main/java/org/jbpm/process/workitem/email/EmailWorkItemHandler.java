@@ -35,7 +35,7 @@ import org.kie.api.runtime.process.WorkItemManager;
  * <p>
  * Sending an email cannot be aborted.
  */
-public class EmailWorkItemHandler extends AbstractLogOrThrow implements TypedWorkItemHandler<Message> {
+public class EmailWorkItemHandler extends AbstractLogOrThrow implements TypedWorkItemHandler<TypedWorkItem<Message, Object>> {
 
     private Connection connection;
     private TemplateManager templateManager = TemplateManager.get();
@@ -72,7 +72,8 @@ public class EmailWorkItemHandler extends AbstractLogOrThrow implements TypedWor
         return connection;
     }
 
-    public void executeWorkItem(TypedWorkItem<Message> workItem, WorkItemManager manager) {
+    @Override
+    public void executeWorkItem(TypedWorkItem<Message, Object> workItem, WorkItemManager manager) {
         try {
             Email email = createEmail(workItem, connection);
             SendHtml.sendHtml(email, false); // we can't get a debug flag from a pojo!
@@ -85,7 +86,7 @@ public class EmailWorkItemHandler extends AbstractLogOrThrow implements TypedWor
         }
     }
 
-    protected Email createEmail(TypedWorkItem<Message> workItem, Connection connection) {
+    protected Email createEmail(TypedWorkItem<Message, Object> workItem, Connection connection) {
         Email email = new Email();
 
         // setup email
@@ -95,7 +96,8 @@ public class EmailWorkItemHandler extends AbstractLogOrThrow implements TypedWor
         return email;
     }
 
-    public void abortWorkItem(TypedWorkItem<Message> arg0, WorkItemManager arg1) {
-        // Do nothing, email cannot be aborted
+    @Override
+    public void abortWorkItem(TypedWorkItem<Message, Object> workItem, WorkItemManager manager) {
+
     }
 }
