@@ -88,7 +88,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         handler.setConnection(emailHost, emailPort, null, null);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
         message.setReplyTo("person3@domain.com");
@@ -118,7 +118,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         handler.setConnection(emailHost, emailPort, null, null);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         Recipients rcpts = message.getRecipients();
         rcpts.setRecipients(Arrays.asList(
                 Recipient.to("person1@domain.com"),
@@ -167,7 +167,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         handler.setConnection(emailHost, emailPort, null, null);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().setRecipients(Arrays.asList(
                 Recipient.to("person1@domain.com"),
                 Recipient.to("person2@domain.com"),
@@ -216,7 +216,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
         handler.setConnection(emailHost, "123", null, null);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
         message.setReplyTo("person3@domain.com");
@@ -235,7 +235,7 @@ public class EmailWorkItemHandlerTest extends AbstractBaseTest {
 
 
         TemplatedMessage message = new TemplatedMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to("person1@domain.com"));
         message.setFrom("person2@domain.com");
         message.setReplyTo("person3@domain.com");

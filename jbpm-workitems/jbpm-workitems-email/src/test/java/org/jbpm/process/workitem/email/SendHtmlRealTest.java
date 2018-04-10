@@ -70,7 +70,7 @@ public class SendHtmlRealTest extends AbstractBaseTest {
         logger.info("{} : {}", testMethodName, uniqueTestNum);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(Recipient.to(toAddress));
         message.setFrom(fromAddress );
         message.setReplyTo(fromAddress );

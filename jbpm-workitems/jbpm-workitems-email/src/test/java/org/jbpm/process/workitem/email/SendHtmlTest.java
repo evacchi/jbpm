@@ -152,7 +152,7 @@ public class SendHtmlTest extends AbstractBaseTest {
         String fromAddress = "rgivens@kty.us.gov";
 
         // Setup email
-        TypedWorkItem<Message> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
+        TypedWorkItem<Message, Object> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
         Connection connection = new Connection(emailHost, emailPort);
 
         sendAndCheckThatMessagesAreSent(workItem, connection);
@@ -169,7 +169,7 @@ public class SendHtmlTest extends AbstractBaseTest {
         String fromAddress = "whawkins@kty.us.gov";
 
         // Setup email
-        TypedWorkItem<Message> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
+        TypedWorkItem<Message, Object> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
         Connection connection = new Connection(emailHost, emailPort, authUsername, authPassword);
 
         sendAndCheckThatMessagesAreSent(workItem, connection);
@@ -186,7 +186,7 @@ public class SendHtmlTest extends AbstractBaseTest {
         String fromAddress = "whawkins@kty.us.gov";
 
         // Setup email
-        TypedWorkItem<Message> workItem = createEmailWorkItemWithAttachment(toAddress, fromAddress, testMethodName);
+        TypedWorkItem<Message, Object> workItem = createEmailWorkItemWithAttachment(toAddress, fromAddress, testMethodName);
         Connection connection = new Connection(emailHost, emailPort, authUsername, authPassword);
 
         // send email
@@ -243,7 +243,7 @@ public class SendHtmlTest extends AbstractBaseTest {
         handler.setConnection(emailHost, emailPort, authUsername, authPassword);
 
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItem<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItem<Message, Object> workItem = new TypedWorkItemImpl<>(message);
 
         message.getRecipients().addRecipient(toAddress);
         message.setFrom(fromAddress);
@@ -268,7 +268,7 @@ public class SendHtmlTest extends AbstractBaseTest {
     /**
      * Helper methods
      */
-    private void sendAndCheckThatMessagesAreSent(TypedWorkItem<Message> workItem, Connection connection) throws Exception {
+    private void sendAndCheckThatMessagesAreSent(TypedWorkItem<Message, Object> workItem, Connection connection) throws Exception {
         // send email
         Email email = emailWorkItemHandler.createEmail(workItem, connection);
         SendHtml.sendHtml(email, connection);
@@ -287,7 +287,7 @@ public class SendHtmlTest extends AbstractBaseTest {
     private void checkBadAuthentication(Recipient toAddress, String fromAddress, String testMethodName,
                                         String username, String password) {
         // Setup email
-        TypedWorkItem<Message> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
+        TypedWorkItem<Message, Object> workItem = createEmailWorkItem(toAddress, fromAddress, testMethodName);
         Connection connection = new Connection(emailHost, emailPort, username, password);
 
         // send email
@@ -306,9 +306,9 @@ public class SendHtmlTest extends AbstractBaseTest {
         }
     }
 
-    private TypedWorkItem<Message> createEmailWorkItem(Recipient toAddress, String fromAddress, String testMethodName) {
+    private TypedWorkItem<Message, Object> createEmailWorkItem(Recipient toAddress, String fromAddress, String testMethodName) {
         SimpleMessage message = new SimpleMessage();
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>(message);
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>(message);
         message.getRecipients().addRecipient(toAddress);
         message.setFrom(fromAddress);
         message.setReplyTo(fromAddress);
@@ -321,8 +321,8 @@ public class SendHtmlTest extends AbstractBaseTest {
         return workItem;
     }
 
-    private TypedWorkItem<Message> createEmailWorkItemWithAttachment(Recipient toAddress, String fromAddress, String testMethodName) {
-        TypedWorkItemImpl<Message> workItem = new TypedWorkItemImpl<>();
+    private TypedWorkItem<Message, Object> createEmailWorkItemWithAttachment(Recipient toAddress, String fromAddress, String testMethodName) {
+        TypedWorkItemImpl<Message, Object> workItem = new TypedWorkItemImpl<>();
         SimpleMessage message = new SimpleMessage();
         workItem.setParameters(message);
 
