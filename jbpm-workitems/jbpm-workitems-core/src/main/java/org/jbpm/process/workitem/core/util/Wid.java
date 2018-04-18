@@ -40,8 +40,12 @@ public @interface Wid {
     String description() default "";
     String defaultHandler() default "";
     String documentation() default "";
+    Class<?> typedParameters() default Null.class;
     WidParameter[] parameters() default {};
     WidParameterValues[] parameterValues() default {};
+    Class<?> typedResults() default Null.class;
     WidResult[] results() default {};
     WidMavenDepends[] mavenDepends() default {};
+
+    class Null { private Null() {} };
 }
