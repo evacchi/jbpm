@@ -21,11 +21,13 @@ import java.util.Set;
 public interface WorkDefinition {
     
     String getName();
-    
+
+    Class<?> getTypedParameters();
     Set<ParameterDefinition> getParameters();
     String[] getParameterNames();
     ParameterDefinition getParameter(String name);
-    
+
+    Class<?> getTypedResults();
     Set<ParameterDefinition> getResults();
     String[] getResultNames();
     ParameterDefinition getResult(String name);

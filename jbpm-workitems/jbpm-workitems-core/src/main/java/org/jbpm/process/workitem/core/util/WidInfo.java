@@ -30,6 +30,8 @@ public class WidInfo {
     private String defaultHandler;
     private String defaultHandlerNoType;
     private String documentation;
+    private Class<?> typedParameters;
+    private Class<?> typedResults;
     private Map<String, InternalWidParamsAndResults> parameters;
     private Map<String, InternalWidParameterValues> parameterValues;
     private Map<String, InternalWidParamsAndResults> results;
@@ -62,6 +64,8 @@ public class WidInfo {
                                                                  wid.defaultHandler()));
 
             this.documentation = setParamValue(this.documentation, wid.documentation());
+            this.typedParameters = wid.typedParameters();
+            this.typedResults = wid.typedResults();
 
             if (wid.parameters().length > 0) {
                 for (WidParameter widParam : wid.parameters()) {

@@ -264,4 +264,17 @@ public class WorkDefinitionImplTest extends AbstractBaseTest {
         }
     }
 
+    @Test
+    public void testServiceWithTypedParams() throws Exception {
+        Map<String, WorkDefinitionImpl> repoResults = WorkItemRepository.getWorkDefinitions(getClass().getResource("repository").toURI().toString());
+        assertNotNull(repoResults);
+        assertFalse(repoResults.isEmpty());
+        assertEquals(repoResults.size(), 10);
+
+        WorkDefinitionImpl wd = repoResults.get("TestServiceWithTypedParams");
+        assertNotNull(wd);
+        assertNotNull(wd.getTypedParameters());
+        assertEquals(wd.getTypedParameters(), org.jbpm.process.workitem.TestServiceWithTypedParams.Person.class);
+    }
+
 }

@@ -1,0 +1,14 @@
+[
+    [
+        "name" : "TestServiceWithTypedParams",
+        "description" : "TestServiceWithTypedParams",
+        "displayName" : "TestServiceWithTypedParams",
+        "typedParameters": org.jbpm.process.workitem.TestServiceWithTypedParams.Person,
+        "typedResults": org.jbpm.process.workitem.TestServiceWithTypedParams.PersonResult,
+        "icon" : "testservicewithparamvalues.png",
+        "category": "MyTestServices",
+	    "dependencies" : [
+        ]
+    ]
+]
+
