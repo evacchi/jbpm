@@ -30,8 +30,8 @@ public class WidInfo {
     private String defaultHandler;
     private String defaultHandlerNoType;
     private String documentation;
-    private Class<?> typedParameters;
-    private Class<?> typedResults;
+    private String typedParameters;
+    private String typedResults;
     private Map<String, InternalWidParamsAndResults> parameters;
     private Map<String, InternalWidParameterValues> parameterValues;
     private Map<String, InternalWidParamsAndResults> results;
@@ -303,6 +303,14 @@ public class WidInfo {
 
     public void setDocumentation(String documentation) {
         this.documentation = documentation;
+    }
+
+    public String getTypedParameters() {
+        return typedParameters;
+    }
+
+    public String getTypedResults() {
+        return typedResults;
     }
 
     public Map<String, InternalWidParamsAndResults> getParameters() {

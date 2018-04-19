@@ -37,7 +37,7 @@ public class WorkDefinitionImplTest extends AbstractBaseTest {
         Map<String, WorkDefinitionImpl> repoResults = WorkItemRepository.getWorkDefinitions(getClass().getResource("repository").toURI().toString());
         assertNotNull(repoResults);
         assertFalse(repoResults.isEmpty());
-        assertEquals(repoResults.size(), 9);
+        assertEquals(repoResults.size(), 10);
 
         WorkDefinitionImpl testServiceOne = repoResults.get("TestServiceOne");
         assertNotNull(testServiceOne);
@@ -108,7 +108,7 @@ public class WorkDefinitionImplTest extends AbstractBaseTest {
         Map<String, WorkDefinitionImpl> repoResults = WorkItemRepository.getWorkDefinitions(getClass().getResource("repository").toURI().toString());
         assertNotNull(repoResults);
         assertFalse(repoResults.isEmpty());
-        assertEquals(repoResults.size(), 9);
+        assertEquals(repoResults.size(), 10);
 
         WorkDefinitionImpl testServiceWithParamValues = repoResults.get("TestServiceWithParamValues");
         assertNotNull(testServiceWithParamValues);
@@ -169,7 +169,7 @@ public class WorkDefinitionImplTest extends AbstractBaseTest {
         Map<String, WorkDefinitionImpl> repoResults = WorkItemRepository.getWorkDefinitions(getClass().getResource("repository").toURI().toString());
         assertNotNull(repoResults);
         assertFalse(repoResults.isEmpty());
-        assertEquals(repoResults.size(), 9);
+        assertEquals(repoResults.size(), 10);
 
         WorkDefinitionImpl testServiceWithParamValuesTwo = repoResults.get("TestServiceWithParamValuesTwo");
         assertNotNull(testServiceWithParamValuesTwo);
@@ -210,7 +210,7 @@ public class WorkDefinitionImplTest extends AbstractBaseTest {
         Map<String, WorkDefinitionImpl> repoResults = WorkItemRepository.getWorkDefinitions(getClass().getResource("repository").toURI().toString());
         assertNotNull(repoResults);
         assertFalse(repoResults.isEmpty());
-        assertEquals(repoResults.size(), 9);
+        assertEquals(repoResults.size(), 10);
 
         WorkDefinitionImpl testServiceWithParamValuesThree = repoResults.get("TestServiceWithParamValuesThree");
         assertNotNull(testServiceWithParamValuesThree);

@@ -135,6 +135,27 @@ public class WidProcessorTest {
                     "public interface MyTestInterface {}"
     );
 
+    private static final JavaFileObject typedParameters = JavaFileObjects.forSourceLines(
+            "org.jbpm.process.workitem.core.util.MyTypedParameters",
+            "package org.jbpm.process.workitem.core.util;\n" +
+                    "\n" +
+                    "import org.jbpm.process.workitem.core.util.Wid;\n" +
+                    "import org.jbpm.process.workitem.core.util.WidParameter;\n" +
+                    "import org.jbpm.process.workitem.core.util.WidMavenDepends;\n" +
+                    "\n" +
+                    "@Wid(widfile = \"mywidfile.wid\", name = \"MyTest\",\n" +
+                    "        displayName = \"My Test Class\", category=\"testcategory\", icon = \"/my/icons/myicon.png\",\n" +
+                    "        defaultHandler = \"mvel: new com.sample.MyWorkItemHandler()\",\n" +
+                    "        typedParameters = \"org.jbpm.process.workitem.core.util.Email\",\n" +
+                    "        typedResults = \"org.jbpm.process.workitem.core.util.EmailResult\",\n" +
+                    "        mavenDepends = {\n" +
+                    "                @WidMavenDepends(group = \"org.jboss\", artifact = \"myworkitem\", version = \"1.0\")\n" +
+                    "        })\n" +
+                    "public class MyTypedParameters {}"
+    );
+
+
+
     private WidProcessor widProcessor = new WidProcessor();
 
     @Test
@@ -307,6 +328,46 @@ public class WidProcessorTest {
         assertEquals("1.0",
                      widInfo.getMavenDepends().get("org.jboss.myworkitem").getVersion());
     }
+
+    @Test
+    public void testWidWithTypedParameters() throws Exception {
+        Map<String, List<Wid>> processingResults = new HashMap<>();
+
+        widProcessor.setProcessingResults(processingResults);
+        widProcessor.setResetResults(false);
+
+        Compiler compiler = compileWithGenerator();
+        compiler.compile(typedParameters);
+
+        assertNotNull(processingResults);
+        assertEquals(1,
+                     processingResults.keySet().size());
+
+        List<Wid> widInfoList = processingResults.get("org.jbpm.process.workitem.core.util.MyTypedParameters");
+        assertNotNull(widInfoList);
+        assertEquals(1,
+                     widInfoList.size());
+
+        WidInfo widInfo = new WidInfo(widInfoList);
+
+        assertNotNull(widInfo);
+
+        assertEquals("mywidfile.wid",
+                     widInfo.getWidfile()); // was overwritten
+        assertEquals("MyTest",
+                     widInfo.getName()); // from interface
+        assertEquals("My Test Class",
+                     widInfo.getDisplayName()); // from interface
+        assertEquals("testcategory",
+                     widInfo.getCategory()); // from interface
+        assertEquals("mvel: new com.sample.MyWorkItemHandler()",
+                     widInfo.getDefaultHandler());
+        assertEquals("new com.sample.MyWorkItemHandler()",
+                     widInfo.getDefaultHandlerNoType());
+        assertEquals(widInfo.getTypedParameters(), Email.class.getCanonicalName());
+        assertEquals(widInfo.getTypedResults(), EmailResult.class.getCanonicalName());
+    }
+
 
     @Test
     public void testGenerationWithProcessingOptions() throws Exception {
