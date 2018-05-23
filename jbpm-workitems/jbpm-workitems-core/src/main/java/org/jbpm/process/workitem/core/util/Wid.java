@@ -39,12 +39,8 @@ public @interface Wid {
     String icon() default "";
     String description() default "";
     String defaultHandler() default "";
-<<<<<<< HEAD
     String documentation() default "";
-    Class<?> typedParameters() default Null.class;
-=======
     String typedParameters() default "";
->>>>>>> add annotation processor tests for typed work items
     WidParameter[] parameters() default {};
     WidParameterValues[] parameterValues() default {};
     String typedResults() default "";
