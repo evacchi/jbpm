@@ -33,8 +33,8 @@ public class WorkDefinitionImpl implements WorkDefinition, Serializable {
     private String name;
     private Map<String, ParameterDefinition> parameters = new HashMap<String, ParameterDefinition>();
     private Map<String, ParameterDefinition> results = new HashMap<String, ParameterDefinition>();
-    private Class<?> typedParameters;
-    private Class<?> typedResults;
+    private String typedParameters;
+    private String typedResults;
 
     public String getName() {
         return name;
@@ -45,20 +45,20 @@ public class WorkDefinitionImpl implements WorkDefinition, Serializable {
     }
 
     @Override
-    public Class<?> getTypedParameters() {
+    public String getTypedParameters() {
         return typedParameters;
     }
 
-    public void setTypedParameters(Class<?> typedParameters) {
+    public void setTypedParameters(String typedParameters) {
         this.typedParameters = typedParameters;
     }
 
     @Override
-    public Class<?> getTypedResults() {
+    public String getTypedResults() {
         return typedResults;
     }
 
-    public void setTypedResults(Class<?> typedResults) {
+    public void setTypedResults(String typedResults) {
         this.typedResults = typedResults;
     }
 

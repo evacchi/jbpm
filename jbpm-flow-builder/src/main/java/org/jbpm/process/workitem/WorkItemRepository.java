@@ -63,8 +63,8 @@ public class WorkItemRepository {
 				workDefinition.setFile((String) workDefinitionMap.get("file"));
 				workDefinition.setDocumentation((String) workDefinitionMap.get("documentation"));
 
-				workDefinition.setTypedParameters((Class<?>) workDefinitionMap.get("typedParameters"));
-				workDefinition.setTypedResults((Class<?>) workDefinitionMap.get("typedResults"));
+				workDefinition.setTypedParameters((String) workDefinitionMap.get("typedParameters"));
+				workDefinition.setTypedResults((String) workDefinitionMap.get("typedResults"));
 
 				Set<ParameterDefinition> parameters = new HashSet<ParameterDefinition>();
 				Map<String, DataType> parameterMap = (Map<String, DataType>) workDefinitionMap.get("parameters");

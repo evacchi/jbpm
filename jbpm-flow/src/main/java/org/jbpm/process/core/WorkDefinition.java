@@ -22,12 +22,12 @@ public interface WorkDefinition {
     
     String getName();
 
-    Class<?> getTypedParameters();
+    String getTypedParameters();
     Set<ParameterDefinition> getParameters();
     String[] getParameterNames();
     ParameterDefinition getParameter(String name);
 
-    Class<?> getTypedResults();
+    String getTypedResults();
     Set<ParameterDefinition> getResults();
     String[] getResultNames();
     ParameterDefinition getResult(String name);
