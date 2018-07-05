@@ -76,15 +76,15 @@ public class ProcessFactoryTest extends JbpmBpmn2TestCase {
                 // nodes
                 .startNode(1).name("Start").done()
                 .compositeNode(2)
-                .name("SubProcess")
-                .startNode(1).name("SubProcess Start").done()
-                .actionNode(2).name("SubProcess Action").action("java",
-                                                                "System.out.println(\"SubProcess Action\");").done()
-                .endNode(3).name("SubProcess End").terminate(true).done()
-                .connection(1,
-                            2)
-                .connection(2,
-                            3)
+                    .name("SubProcess")
+                    .startNode(1).name("SubProcess Start").done()
+                    .actionNode(2).name("SubProcess Action").action("java",
+                                                                    "System.out.println(\"SubProcess Action\");").done()
+                    .endNode(3).name("SubProcess End").terminate(true).done()
+                    .connection(1,
+                                2)
+                    .connection(2,
+                                3)
                 .done()
                 .endNode(3).name("End").done()
                 // connections

@@ -203,11 +203,15 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
     public ProcessInstance startProcessInstance(long processInstanceId, String trigger) {
     	try {
             kruntime.startOperation();
+            org.jbpm.process.instance.ProcessInstance processInstance =
+                    (org.jbpm.process.instance.ProcessInstance)
+                            getProcessInstance(processInstanceId);
 
-            ProcessInstance processInstance = getProcessInstance(processInstanceId);
-            ((org.jbpm.process.instance.ProcessInstance) processInstance).configureSLA();
+            processInstance.configureSLA();
             getProcessEventSupport().fireBeforeProcessStarted( processInstance, kruntime );
-	        ((org.jbpm.process.instance.ProcessInstance) processInstance).start(trigger);
+
+	        processInstance.start(trigger);
+
 	        getProcessEventSupport().fireAfterProcessStarted( processInstance, kruntime );
 	        return processInstance;
         } finally {
