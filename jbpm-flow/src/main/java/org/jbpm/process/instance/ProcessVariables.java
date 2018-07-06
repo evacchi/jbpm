@@ -5,20 +5,14 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jbpm.process.core.context.variable.VariableInstance;
-import org.jbpm.process.core.context.variable.VariableScope;
-import org.jbpm.process.instance.context.variable.VariableScopeInstance;
+import org.jbpm.process.instance.impl.ProcessInstanceImpl;
+import org.jbpm.ruleflow.core.RuleFlowProcess;
 import org.kie.api.runtime.rule.RuleUnit;
 
 public abstract class ProcessVariables {
@@ -29,19 +23,7 @@ public abstract class ProcessVariables {
         return new Untyped(parameters);
     }
 
-    public <T> Optional<Typed<T>> asTyped(Class<T> c) { return Optional.empty(); }
-    public Optional<Untyped> asUntyped() { return Optional.empty(); }
-
-    public abstract Collection<VariableInstance> variables();
-
-    public void validate(String processName, VariableScope scope, VariableScopeInstance instance) {
-        Objects.requireNonNull(scope, "This process does not support parameters!");
-        for ( VariableInstance variableInstance:  variables() ) {
-            instance.setVariable( variableInstance.name(), variableInstance.get() );
-        }
-    }
-
-
+    public abstract Collection<VariableInstance> variables(ProcessInstance processInstance);
 
     static class Typed<T> extends ProcessVariables {
         private final T value;
@@ -64,12 +46,12 @@ public abstract class ProcessVariables {
             return value;
         }
 
-        public <T> Optional<Typed<T>> asTyped(Class<T> c) { return Optional.of((Typed<T>)this); }
-
-        public Collection<VariableInstance> variables() {
+        public Collection<VariableInstance> variables(ProcessInstance processInstance) {
             return propertyDescriptors.values()
                     .stream()
                     .map(pd -> VariableInstance.of(
+                            processInstance,
+                            ((RuleFlowProcess) processInstance.getProcess()).getVariableScope(),
                             pd.getName(),
                             () -> getPropertyValue(pd),
                             v -> setPropertyValue(pd, v)))
@@ -105,12 +87,15 @@ public abstract class ProcessVariables {
             return parameters;
         }
 
-        public Optional<Untyped> asUntyped() { return Optional.of(this); }
-
-        public Collection<VariableInstance> variables() {
+        public Collection<VariableInstance> variables(ProcessInstance processInstance) {
             return parameters.entrySet()
                     .stream()
-                    .map(el -> VariableInstance.of(el.getKey(), el::getValue, el::setValue))
+                    .map(el -> VariableInstance.of(
+                            processInstance,
+                            ((RuleFlowProcess) processInstance.getProcess()).getVariableScope(),
+                            el.getKey(),
+                            el::getValue,
+                            el::setValue))
                     .collect(Collectors.toList());
         }
 

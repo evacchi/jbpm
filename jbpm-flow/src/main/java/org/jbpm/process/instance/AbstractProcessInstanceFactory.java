@@ -52,7 +52,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 
         // set variable default values
         // TODO: should be part of processInstanceImpl?
-        processInstance.setProcessVariables(variables);
+        processInstance.newVariableScopeInstance(variables);
         
         return processInstance;
 	}
