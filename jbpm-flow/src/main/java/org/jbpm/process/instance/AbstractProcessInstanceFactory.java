@@ -30,7 +30,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 	
 	public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey, 
 			                                     InternalKnowledgeRuntime kruntime,
-			                                     Map<String, Object> parameters) {
+			                                     ProcessVariables parameters) {
 		ProcessInstance processInstance = (ProcessInstance) createProcessInstance();
 		processInstance.setKnowledgeRuntime( kruntime );
         processInstance.setProcess( process );
@@ -50,18 +50,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
         // TODO: should be part of processInstanceImpl?
         VariableScope variableScope = (VariableScope) ((ContextContainer) process).getDefaultContext( VariableScope.VARIABLE_SCOPE );
         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance.getContextInstance( VariableScope.VARIABLE_SCOPE );
-        // set input parameters
-        if ( parameters != null ) {
-            if ( variableScope != null ) {
-                for ( Map.Entry<String, Object> entry : parameters.entrySet() ) {
-                	
-                	variableScope.validateVariable(process.getName(), entry.getKey(), entry.getValue());
-                    variableScopeInstance.setVariable( entry.getKey(), entry.getValue() );
-                }
-            } else {
-                throw new IllegalArgumentException( "This process does not support parameters!" );
-            }
-        }
+        parameters.validate(process.getName(), variableScope, variableScopeInstance);
         
         return processInstance;
 	}
