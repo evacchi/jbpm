@@ -25,6 +25,7 @@ import org.drools.core.ClassObjectFilter;
 import org.drools.core.event.ProcessEventSupport;
 import org.jbpm.process.core.Process;
 import org.jbpm.process.core.context.variable.Variable;
+import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.ContextInstanceContainer;
 import org.jbpm.process.instance.InternalProcessRuntime;
@@ -42,7 +43,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     private static final long serialVersionUID = 510l;    
     
-    private Map<String, Object> variables = new HashMap<String, Object>();
+    private Map<String, VariableInstance> variables = new HashMap<>();
     private transient String variableIdPrefix = null;
     private transient String variableInstanceIdPrefix = null;
 
@@ -51,8 +52,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public Object getVariable(String name) {
-                
-        Object value = variables.get(name);
+
+        Object value = variables.get(name).get();
         if (value != null) {
             return value;
         }
@@ -63,7 +64,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
         } else if ("parentProcessInstanceId".equals(name) && getProcessInstance() != null) {
             return getProcessInstance().getParentProcessInstanceId();
         }
-        
+
 
         if (getProcessInstance() != null && getProcessInstance().getKnowledgeRuntime() != null) {
             // support for globals
@@ -82,8 +83,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
                     return caseFile.getData(lookUpName);
                 }
             }
-            
-        }    
+
+        }
 
         return null;
     }
@@ -93,53 +94,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public void setVariable(String name, Object value) {
-        getVariableScope()
-                .validateVariable(((Process) getVariableScope().getContextContainer()).getName(), name, value);
-
-        if (name == null) {
-            throw new IllegalArgumentException(
-                "The name of a variable may not be null!");
-        }
-        Object oldValue = variables.get(name);
-        if (oldValue == null) {
-        	if (value == null) {
-        		return;
-        	}
-        } 
-        ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
-    		.getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
-    	processEventSupport.fireBeforeVariableChanged(
-			(variableIdPrefix == null ? "" : variableIdPrefix + ":") + name,
-			(variableInstanceIdPrefix == null? "" : variableInstanceIdPrefix + ":") + name,
-			oldValue, value, getProcessInstance(),
-			getProcessInstance().getKnowledgeRuntime());
-        internalSetVariable(name, value);
-        processEventSupport.fireAfterVariableChanged(
-			(variableIdPrefix == null ? "" : variableIdPrefix + ":") + name,
-			(variableInstanceIdPrefix == null? "" : variableInstanceIdPrefix + ":") + name,
-    		oldValue, value, getProcessInstance(),
-			getProcessInstance().getKnowledgeRuntime());
-    }
-    
-    public void internalSetVariable(String name, Object value) {
-        if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
-            String nameInCaseFile = name.replaceFirst(VariableScope.CASE_FILE_PREFIX, "");            
-            // store it under case file rather regular variables
-            @SuppressWarnings("unchecked")
-            Collection<CaseData> caseFiles = (Collection<CaseData>) getProcessInstance().getKnowledgeRuntime().getObjects(new ClassObjectFilter(CaseData.class));
-            if (caseFiles.size() == 1) {
-                CaseData caseFile = (CaseData) caseFiles.iterator().next();
-                FactHandle factHandle = getProcessInstance().getKnowledgeRuntime().getFactHandle(caseFile);
-                
-                caseFile.add(nameInCaseFile, value);
-                getProcessInstance().getKnowledgeRuntime().update(factHandle, caseFile);
-                ((KieSession)getProcessInstance().getKnowledgeRuntime()).fireAllRules();
-                return;
-            }
-            
-        }
-        // not a case, store it in normal variables
-    	variables.put(name, value);
+        variables.get(name).set(value);
     }
     
     public VariableScope getVariableScope() {

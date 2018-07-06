@@ -27,6 +27,7 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.util.MVELSafeHelper;
 import org.jbpm.process.core.Context;
 import org.jbpm.process.core.ContextContainer;
+import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.core.impl.XmlProcessDumper;
 import org.jbpm.process.core.impl.XmlProcessDumperFactory;
@@ -326,14 +327,14 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
     	this.description = description;
     }
 
-    public void setProcessVariables(ProcessVariables variables) {
-        ContextContainer ctxCtr = (ContextContainer) process;
-        VariableScope variableScope =
-                (VariableScope) ctxCtr.getDefaultContext(VariableScope.VARIABLE_SCOPE );
-
+    public VariableScopeInstance newVariableScopeInstance(ProcessVariables variables) {
         VariableScopeInstance variableScopeInstance =
                 (VariableScopeInstance) this.getContextInstance( VariableScope.VARIABLE_SCOPE );
 
-        variables.validate(process.getName(), variableScope, variableScopeInstance);
+        for ( VariableInstance variableInstance:  variables.variables(this) ) {
+            variableScopeInstance.setVariable(variableInstance.name(), variableInstance.get() );
+        }
+
+        return variableScopeInstance;
     }
 }
