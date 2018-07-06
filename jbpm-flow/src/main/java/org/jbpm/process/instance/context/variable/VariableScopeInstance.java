@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.drools.core.ClassObjectFilter;
 import org.drools.core.event.ProcessEventSupport;
+import org.jbpm.process.core.Process;
 import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.ContextInstanceContainer;
@@ -92,6 +93,9 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public void setVariable(String name, Object value) {
+        getVariableScope()
+                .validateVariable(((Process) getVariableScope().getContextContainer()).getName(), name, value);
+
         if (name == null) {
             throw new IllegalArgumentException(
                 "The name of a variable may not be null!");

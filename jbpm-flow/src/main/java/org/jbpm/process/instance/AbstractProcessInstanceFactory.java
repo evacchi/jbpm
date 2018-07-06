@@ -22,6 +22,7 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.jbpm.process.core.ContextContainer;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
+import org.jbpm.process.instance.impl.ProcessInstanceImpl;
 import org.kie.api.definition.process.Process;
 import org.kie.internal.process.CorrelationKey;
 import org.kie.internal.runtime.manager.InternalRuntimeManager;
@@ -30,8 +31,9 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 	
 	public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey, 
 			                                     InternalKnowledgeRuntime kruntime,
-			                                     ProcessVariables parameters) {
-		ProcessInstance processInstance = (ProcessInstance) createProcessInstance();
+			                                     ProcessVariables variables) {
+
+	    ProcessInstanceImpl processInstance = (ProcessInstanceImpl) createProcessInstance();
 		processInstance.setKnowledgeRuntime( kruntime );
         processInstance.setProcess( process );
         
@@ -42,15 +44,15 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
         if (manager != null) {
             processInstance.setDeploymentId(manager.getIdentifier());
         }
-        
-        ((InternalProcessRuntime) kruntime.getProcessRuntime()).getProcessInstanceManager()
+
+        InternalProcessRuntime processRuntime =
+                (InternalProcessRuntime) kruntime.getProcessRuntime();
+        processRuntime.getProcessInstanceManager()
     		.addProcessInstance( processInstance, correlationKey );
 
         // set variable default values
         // TODO: should be part of processInstanceImpl?
-        VariableScope variableScope = (VariableScope) ((ContextContainer) process).getDefaultContext( VariableScope.VARIABLE_SCOPE );
-        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance.getContextInstance( VariableScope.VARIABLE_SCOPE );
-        parameters.validate(process.getName(), variableScope, variableScopeInstance);
+        processInstance.setProcessVariables(variables);
         
         return processInstance;
 	}

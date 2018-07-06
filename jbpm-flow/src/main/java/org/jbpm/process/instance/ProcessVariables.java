@@ -6,13 +6,17 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
 import org.kie.api.runtime.rule.RuleUnit;
@@ -28,7 +32,16 @@ public abstract class ProcessVariables {
     public <T> Optional<Typed<T>> asTyped(Class<T> c) { return Optional.empty(); }
     public Optional<Untyped> asUntyped() { return Optional.empty(); }
 
-    public abstract void validate(String processName, VariableScope scope, VariableScopeInstance instance);
+    public abstract Collection<VariableInstance> variables();
+
+    public void validate(String processName, VariableScope scope, VariableScopeInstance instance) {
+        Objects.requireNonNull(scope, "This process does not support parameters!");
+        for ( VariableInstance variableInstance:  variables() ) {
+            instance.setVariable( variableInstance.name(), variableInstance.get() );
+        }
+    }
+
+
 
     static class Typed<T> extends ProcessVariables {
         private final T value;
@@ -53,23 +66,27 @@ public abstract class ProcessVariables {
 
         public <T> Optional<Typed<T>> asTyped(Class<T> c) { return Optional.of((Typed<T>)this); }
 
-        @Override
-        public void validate(String processName, VariableScope scope, VariableScopeInstance instance) {
-            Objects.requireNonNull(scope, "This process does not support parameters!");
-            for ( PropertyDescriptor propertyDescriptor: propertyDescriptors.values() ) {
-                String name = propertyDescriptor.getName();
-                Object propertyValue = getPropertyValue(propertyDescriptor);
-                scope.validateVariable(processName,
-                                       name,
-                                       propertyValue);
-                instance.setVariable( name, propertyValue );
-            }
-
+        public Collection<VariableInstance> variables() {
+            return propertyDescriptors.values()
+                    .stream()
+                    .map(pd -> VariableInstance.of(
+                            pd.getName(),
+                            () -> getPropertyValue(pd),
+                            v -> setPropertyValue(pd, v)))
+                    .collect(Collectors.toList());
         }
 
         private Object getPropertyValue(PropertyDescriptor propertyDescriptor) {
             try {
                 return propertyDescriptor.getReadMethod().invoke(value);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+
+        private void setPropertyValue(PropertyDescriptor propertyDescriptor, Object v) {
+            try {
+                propertyDescriptor.getWriteMethod().invoke(value, v);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -90,13 +107,13 @@ public abstract class ProcessVariables {
 
         public Optional<Untyped> asUntyped() { return Optional.of(this); }
 
-        public void validate(String processName, VariableScope scope, VariableScopeInstance instance) {
-            Objects.requireNonNull(scope, "This process does not support parameters!");
-            for ( Map.Entry<String, Object> entry : parameters().entrySet() ) {
-                scope.validateVariable(processName, entry.getKey(), entry.getValue());
-                instance.setVariable( entry.getKey(), entry.getValue() );
-            }
+        public Collection<VariableInstance> variables() {
+            return parameters.entrySet()
+                    .stream()
+                    .map(el -> VariableInstance.of(el.getKey(), el::getValue, el::setValue))
+                    .collect(Collectors.toList());
         }
+
 
     }
 
