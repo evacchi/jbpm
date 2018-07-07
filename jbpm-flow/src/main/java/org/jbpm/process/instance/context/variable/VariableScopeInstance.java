@@ -22,19 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.drools.core.ClassObjectFilter;
-import org.drools.core.event.ProcessEventSupport;
-import org.jbpm.process.core.Process;
 import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.ContextInstanceContainer;
-import org.jbpm.process.instance.InternalProcessRuntime;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
-import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.process.CaseData;
-import org.kie.api.runtime.rule.FactHandle;
 
 /**
  * 
@@ -94,22 +89,36 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public void setVariable(String name, Object value) {
+        System.out.println(name);
         variables.get(name).set(value);
     }
-    
+
+    public <T> VariableInstance<Object> newInstanceOf(Variable variable) {
+        VariableInstance<Object> variableInstance =
+                VariableInstance.of(this, variable);
+        variables.put(variable.getName(), variableInstance);
+        return variableInstance;
+    }
+
+    public <T> VariableInstance<T> getVariableInstance(String name) {
+        return (VariableInstance<T>) variables.get(name);
+    }
+
+
     public VariableScope getVariableScope() {
     	return (VariableScope) getContext();
     }
     
     public void setContextInstanceContainer(ContextInstanceContainer contextInstanceContainer) {
     	super.setContextInstanceContainer(contextInstanceContainer);
-    	for (Variable variable : getVariableScope().getVariables()) {
-            setVariable(variable.getName(), variable.getValue());
-        }
+        getVariableScope().getVariables().forEach(this::newInstanceOf);
     	if (contextInstanceContainer instanceof CompositeContextNodeInstance) {
     		this.variableIdPrefix = ((Node) ((CompositeContextNodeInstance) contextInstanceContainer).getNode()).getUniqueId();
     		this.variableInstanceIdPrefix = ((CompositeContextNodeInstance) contextInstanceContainer).getUniqueId();
     	}
 	}
 
+    public void internalSetVariable(String name, Object value) {
+        throw new UnsupportedOperationException("internalSetVariable");
+    }
 }

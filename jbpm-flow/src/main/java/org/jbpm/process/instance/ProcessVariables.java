@@ -1,18 +1,16 @@
 package org.jbpm.process.instance;
 
 import java.beans.BeanInfo;
+import java.beans.FeatureDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jbpm.process.core.context.variable.VariableInstance;
-import org.jbpm.process.instance.impl.ProcessInstanceImpl;
-import org.jbpm.ruleflow.core.RuleFlowProcess;
 import org.kie.api.runtime.rule.RuleUnit;
 
 public abstract class ProcessVariables {
@@ -23,7 +21,7 @@ public abstract class ProcessVariables {
         return new Untyped(parameters);
     }
 
-    public abstract Collection<VariableInstance> variables(ProcessInstance processInstance);
+    public abstract Map<String, VariableInstance> variables(ProcessInstance processInstance);
 
     static class Typed<T> extends ProcessVariables {
         private final T value;
@@ -46,16 +44,14 @@ public abstract class ProcessVariables {
             return value;
         }
 
-        public Collection<VariableInstance> variables(ProcessInstance processInstance) {
+        public Map<String, VariableInstance> variables(ProcessInstance processInstance) {
             return propertyDescriptors.values()
                     .stream()
-                    .map(pd -> VariableInstance.of(
-                            processInstance,
-                            ((RuleFlowProcess) processInstance.getProcess()).getVariableScope(),
-                            pd.getName(),
-                            () -> getPropertyValue(pd),
-                            v -> setPropertyValue(pd, v)))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toMap(
+                            FeatureDescriptor::getName,
+                            pd -> VariableInstance.of(
+                                () -> getPropertyValue(pd),
+                                v -> setPropertyValue(pd, v))));
         }
 
         private Object getPropertyValue(PropertyDescriptor propertyDescriptor) {
@@ -87,16 +83,14 @@ public abstract class ProcessVariables {
             return parameters;
         }
 
-        public Collection<VariableInstance> variables(ProcessInstance processInstance) {
+        public Map<String, VariableInstance> variables(ProcessInstance processInstance) {
             return parameters.entrySet()
                     .stream()
-                    .map(el -> VariableInstance.of(
-                            processInstance,
-                            ((RuleFlowProcess) processInstance.getProcess()).getVariableScope(),
-                            el.getKey(),
+                    .collect(Collectors.toMap(
+                            el -> el.getKey(),
+                            el -> VariableInstance.of(
                             el::getValue,
-                            el::setValue))
-                    .collect(Collectors.toList());
+                            el::setValue)));
         }
 
 

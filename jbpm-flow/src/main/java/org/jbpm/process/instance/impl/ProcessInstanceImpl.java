@@ -331,8 +331,14 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
         VariableScopeInstance variableScopeInstance =
                 (VariableScopeInstance) this.getContextInstance( VariableScope.VARIABLE_SCOPE );
 
-        for ( VariableInstance variableInstance:  variables.variables(this) ) {
-            variableScopeInstance.setVariable(variableInstance.name(), variableInstance.get() );
+        for ( Map.Entry<String, VariableInstance> e:  variables.variables(this).entrySet() ) {
+//            variableScopeInstance.setVariable(variableInstance.name(), variableInstance.get() );
+            VariableInstance<Object> variableInstance = variableScopeInstance.getVariableInstance(e.getKey());
+            if (variableInstance ==  null) {
+                System.err.println("WARNING skipping unkwnown variable "+e.getKey());
+                continue;
+            }
+            ((VariableInstance.RootVariableInstance) variableInstance).setDelegate(e.getValue());
         }
 
         return variableScopeInstance;
