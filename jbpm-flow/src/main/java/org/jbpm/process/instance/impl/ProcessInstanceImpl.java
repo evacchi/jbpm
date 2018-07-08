@@ -27,6 +27,7 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.util.MVELSafeHelper;
 import org.jbpm.process.core.Context;
 import org.jbpm.process.core.ContextContainer;
+import org.jbpm.process.core.context.variable.RootVariableInstance;
 import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.core.impl.XmlProcessDumper;
@@ -333,12 +334,13 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 
         for ( Map.Entry<String, VariableInstance> e:  variables.variables(this).entrySet() ) {
 //            variableScopeInstance.setVariable(variableInstance.name(), variableInstance.get() );
-            VariableInstance<Object> variableInstance = variableScopeInstance.getVariableInstance(e.getKey());
+            VariableInstance.Named<Object> variableInstance =
+                    variableScopeInstance.getVariableInstance(e.getKey());
             if (variableInstance ==  null) {
                 System.err.println("WARNING skipping unkwnown variable "+e.getKey());
                 continue;
             }
-            ((VariableInstance.RootVariableInstance) variableInstance).setDelegate(e.getValue());
+            variableInstance.setDelegate(e.getValue());
         }
 
         return variableScopeInstance;
