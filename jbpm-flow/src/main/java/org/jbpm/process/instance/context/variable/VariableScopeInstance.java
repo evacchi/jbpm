@@ -16,12 +16,12 @@
 
 package org.jbpm.process.instance.context.variable;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.drools.core.ClassObjectFilter;
+import org.jbpm.process.core.context.variable.RootVariableInstance;
 import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
@@ -29,59 +29,22 @@ import org.jbpm.process.instance.ContextInstanceContainer;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
-import org.kie.api.runtime.process.CaseData;
 
 /**
- * 
+ *
  */
 public class VariableScopeInstance extends AbstractContextInstance {
 
-    private static final long serialVersionUID = 510l;    
-    
-    private Map<String, VariableInstance> variables = new HashMap<>();
-    private transient String variableIdPrefix = null;
-    private transient String variableInstanceIdPrefix = null;
+    private static final long serialVersionUID = 510l;
+
+    private Map<String, VariableInstance.Named> variables = new HashMap<>();
 
     public String getContextType() {
         return VariableScope.VARIABLE_SCOPE;
     }
 
     public Object getVariable(String name) {
-
-        Object value = variables.get(name).get();
-        if (value != null) {
-            return value;
-        }
-
-        // support for processInstanceId and parentProcessInstanceId
-        if ("processInstanceId".equals(name) && getProcessInstance() != null) {
-            return getProcessInstance().getId();
-        } else if ("parentProcessInstanceId".equals(name) && getProcessInstance() != null) {
-            return getProcessInstance().getParentProcessInstanceId();
-        }
-
-
-        if (getProcessInstance() != null && getProcessInstance().getKnowledgeRuntime() != null) {
-            // support for globals
-            value = getProcessInstance().getKnowledgeRuntime().getGlobal(name);
-            if (value != null) {
-                return value;
-            }
-            // support for case file data
-            @SuppressWarnings("unchecked")
-            Collection<CaseData> caseFiles = (Collection<CaseData>) getProcessInstance().getKnowledgeRuntime().getObjects(new ClassObjectFilter(CaseData.class));
-            if (caseFiles.size() == 1) {
-                CaseData caseFile = caseFiles.iterator().next();
-                // check if there is case file prefix and if so remove it before checking case file data
-                final String lookUpName = name.startsWith(VariableScope.CASE_FILE_PREFIX) ? name.replaceFirst(VariableScope.CASE_FILE_PREFIX, "") : name;
-                if (caseFile != null) {
-                    return caseFile.getData(lookUpName);
-                }
-            }
-
-        }
-
-        return null;
+        return getVariableInstance(name).get();
     }
 
     public Map<String, Object> getVariables() {
@@ -93,32 +56,38 @@ public class VariableScopeInstance extends AbstractContextInstance {
         variables.get(name).set(value);
     }
 
-    public <T> VariableInstance<Object> newInstanceOf(Variable variable) {
-        VariableInstance<Object> variableInstance =
-                VariableInstance.of(this, variable);
-        variables.put(variable.getName(), variableInstance);
+    public void internalSetVariable(String name, Object value) {
+        getVariableInstance(name).getDelegate().set(value);
+    }
+
+    public RootVariableInstance<Object> newInstanceOf(Variable variable) {
+        RootVariableInstance<Object> variableInstance =
+                VariableInstance.root(this, variable);
         return variableInstance;
     }
 
-    public <T> VariableInstance<T> getVariableInstance(String name) {
-        return (VariableInstance<T>) variables.get(name);
+    public <T> VariableInstance.Named<T> getVariableInstance(String name) {
+        return variables.get(name);
     }
-
 
     public VariableScope getVariableScope() {
-    	return (VariableScope) getContext();
+        return (VariableScope) getContext();
     }
-    
-    public void setContextInstanceContainer(ContextInstanceContainer contextInstanceContainer) {
-    	super.setContextInstanceContainer(contextInstanceContainer);
-        getVariableScope().getVariables().forEach(this::newInstanceOf);
-    	if (contextInstanceContainer instanceof CompositeContextNodeInstance) {
-    		this.variableIdPrefix = ((Node) ((CompositeContextNodeInstance) contextInstanceContainer).getNode()).getUniqueId();
-    		this.variableInstanceIdPrefix = ((CompositeContextNodeInstance) contextInstanceContainer).getUniqueId();
-    	}
-	}
 
-    public void internalSetVariable(String name, Object value) {
-        throw new UnsupportedOperationException("internalSetVariable");
+    public void setContextInstanceContainer(ContextInstanceContainer contextInstanceContainer) {
+        super.setContextInstanceContainer(contextInstanceContainer);
+        final String variableIdPrefix;
+        final String variableInstanceIdPrefix;
+        if (contextInstanceContainer instanceof CompositeContextNodeInstance) {
+            variableIdPrefix = ((Node) ((CompositeContextNodeInstance) contextInstanceContainer).getNode()).getUniqueId();
+            variableInstanceIdPrefix = ((CompositeContextNodeInstance) contextInstanceContainer).getUniqueId();
+        } else {
+            variableIdPrefix = null;
+            variableInstanceIdPrefix = null;
+        }
+
+        getVariableScope().getVariables().stream()
+                .map(v -> VariableInstance.root(this, v).validated(variableIdPrefix, variableInstanceIdPrefix, getProcessInstance()))
+                .forEach(v -> variables.put(v.name(), v));
     }
 }

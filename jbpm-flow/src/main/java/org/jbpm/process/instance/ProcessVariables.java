@@ -14,9 +14,11 @@ import org.jbpm.process.core.context.variable.VariableInstance;
 import org.kie.api.runtime.rule.RuleUnit;
 
 public abstract class ProcessVariables {
+
     public static <T extends RuleUnit> ProcessVariables.Typed<T> typed(T value) {
         return new Typed<>(value);
     }
+
     public static ProcessVariables.Untyped untyped(Map<String, Object> parameters) {
         return new Untyped(parameters);
     }
@@ -24,6 +26,7 @@ public abstract class ProcessVariables {
     public abstract Map<String, VariableInstance> variables(ProcessInstance processInstance);
 
     static class Typed<T> extends ProcessVariables {
+
         private final T value;
         private final HashMap<String, PropertyDescriptor> propertyDescriptors;
 
@@ -50,8 +53,8 @@ public abstract class ProcessVariables {
                     .collect(Collectors.toMap(
                             FeatureDescriptor::getName,
                             pd -> VariableInstance.of(
-                                () -> getPropertyValue(pd),
-                                v -> setPropertyValue(pd, v))));
+                                    () -> getPropertyValue(pd),
+                                    v -> setPropertyValue(pd, v))));
         }
 
         private Object getPropertyValue(PropertyDescriptor propertyDescriptor) {
@@ -89,11 +92,8 @@ public abstract class ProcessVariables {
                     .collect(Collectors.toMap(
                             el -> el.getKey(),
                             el -> VariableInstance.of(
-                            el::getValue,
-                            el::setValue)));
+                                    el::getValue,
+                                    el::setValue)));
         }
-
-
     }
-
 }
