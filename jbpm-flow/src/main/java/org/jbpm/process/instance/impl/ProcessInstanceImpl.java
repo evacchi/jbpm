@@ -27,7 +27,7 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.util.MVELSafeHelper;
 import org.jbpm.process.core.Context;
 import org.jbpm.process.core.ContextContainer;
-import org.jbpm.process.core.context.variable.RootVariableInstance;
+import org.jbpm.process.core.context.variable.ValueReference;
 import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.core.impl.XmlProcessDumper;
@@ -328,19 +328,23 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
     	this.description = description;
     }
 
-    public VariableScopeInstance newVariableScopeInstance(ProcessVariables variables) {
+    public VariableScopeInstance assign(ProcessVariables variables) {
         VariableScopeInstance variableScopeInstance =
                 (VariableScopeInstance) this.getContextInstance( VariableScope.VARIABLE_SCOPE );
 
-        for ( Map.Entry<String, VariableInstance> e:  variables.variables(this).entrySet() ) {
-//            variableScopeInstance.setVariable(variableInstance.name(), variableInstance.get() );
-            VariableInstance.Named<Object> variableInstance =
-                    variableScopeInstance.getVariableInstance(e.getKey());
+        for ( Map.Entry<String, ValueReference> e:  variables.variables().entrySet() ) {
+
+            VariableInstance<Object> variableInstance =
+                    variableScopeInstance
+                            .assignVariableInstance(
+                                    process.getName(),
+                                    e.getKey(),
+                                    e.getValue());
+
             if (variableInstance ==  null) {
                 System.err.println("WARNING skipping unkwnown variable "+e.getKey());
-                continue;
             }
-            variableInstance.setDelegate(e.getValue());
+
         }
 
         return variableScopeInstance;

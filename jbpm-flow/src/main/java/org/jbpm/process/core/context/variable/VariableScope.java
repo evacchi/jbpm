@@ -95,7 +95,7 @@ public class VariableScope extends AbstractContext {
     }
 
     public VariableScopeInstance newInstance(ProcessInstance processInstance, ProcessVariables variables) {
-        return ((ProcessInstanceImpl) processInstance).newVariableScopeInstance(variables);
+        return ((ProcessInstanceImpl) processInstance).assign(variables);
     }
 
 	public void validateVariable(String processName, String name, Object value) {
