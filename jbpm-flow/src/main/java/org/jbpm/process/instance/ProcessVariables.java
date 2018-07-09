@@ -6,11 +6,12 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.jbpm.process.core.context.variable.VariableInstance;
+import org.jbpm.process.core.context.variable.ValueReference;
 import org.kie.api.runtime.rule.RuleUnit;
 
 public abstract class ProcessVariables {
@@ -20,10 +21,10 @@ public abstract class ProcessVariables {
     }
 
     public static ProcessVariables.Untyped untyped(Map<String, Object> parameters) {
-        return new Untyped(parameters);
+        return new Untyped(parameters == null? Collections.emptyMap() : parameters);
     }
 
-    public abstract Map<String, VariableInstance> variables(ProcessInstance processInstance);
+    public abstract Map<String, ValueReference> variables();
 
     static class Typed<T> extends ProcessVariables {
 
@@ -47,12 +48,12 @@ public abstract class ProcessVariables {
             return value;
         }
 
-        public Map<String, VariableInstance> variables(ProcessInstance processInstance) {
+        public Map<String, ValueReference> variables() {
             return propertyDescriptors.values()
                     .stream()
                     .collect(Collectors.toMap(
                             FeatureDescriptor::getName,
-                            pd -> VariableInstance.of(
+                            pd -> ValueReference.of(
                                     () -> getPropertyValue(pd),
                                     v -> setPropertyValue(pd, v))));
         }
@@ -86,12 +87,12 @@ public abstract class ProcessVariables {
             return parameters;
         }
 
-        public Map<String, VariableInstance> variables(ProcessInstance processInstance) {
+        public Map<String, ValueReference> variables() {
             return parameters.entrySet()
                     .stream()
                     .collect(Collectors.toMap(
                             el -> el.getKey(),
-                            el -> VariableInstance.of(
+                            el -> ValueReference.of(
                                     el::getValue,
                                     el::setValue)));
         }

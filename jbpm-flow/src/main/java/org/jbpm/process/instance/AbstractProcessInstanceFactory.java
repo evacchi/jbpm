@@ -16,12 +16,7 @@
 
 package org.jbpm.process.instance;
 
-import java.util.Map;
-
 import org.drools.core.common.InternalKnowledgeRuntime;
-import org.jbpm.process.core.ContextContainer;
-import org.jbpm.process.core.context.variable.VariableScope;
-import org.jbpm.process.instance.context.variable.VariableScopeInstance;
 import org.jbpm.process.instance.impl.ProcessInstanceImpl;
 import org.kie.api.definition.process.Process;
 import org.kie.internal.process.CorrelationKey;
@@ -52,7 +47,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 
         // set variable default values
         // TODO: should be part of processInstanceImpl?
-        processInstance.newVariableScopeInstance(variables);
+        processInstance.assign(variables);
         
         return processInstance;
 	}
