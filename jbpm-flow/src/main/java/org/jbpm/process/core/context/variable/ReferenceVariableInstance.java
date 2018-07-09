@@ -36,7 +36,11 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
     }
 
     public void setReference(ValueReference<T> delegate) {
+        // if (this.delegate != null) throw new IllegalStateException("Cannot setReference more than once");
+        T value = delegate.get();
+        if (beforeSetHandler != null) beforeSetHandler.accept(null, value);
         this.delegate = delegate;
+        if (afterSetHandler != null) afterSetHandler.accept(null, value);
     }
 
     public ValueReference<T> getDelegate() {
