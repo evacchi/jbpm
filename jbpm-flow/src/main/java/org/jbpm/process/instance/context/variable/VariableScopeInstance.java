@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     private static final long serialVersionUID = 510l;
 
-    private Map<String, VariableInstance> variables = new HashMap<>();
+    private Map<String, VariableInstance<?>> variables = new HashMap<>();
     private String variableIdPrefix = null;
     private String variableInstanceIdPrefix = null;
 
@@ -72,7 +72,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public <T> VariableInstance<T> getVariableInstance(String name) {
-        return variables.get(name);
+        return (VariableInstance<T>) variables.get(name);
     }
 
     public VariableScope getVariableScope() {
@@ -86,38 +86,52 @@ public class VariableScopeInstance extends AbstractContextInstance {
             this.variableInstanceIdPrefix = ((CompositeContextNodeInstance) contextInstanceContainer).getUniqueId();
         }
 
+        createVariableInstances();
+    }
+
+    private void createVariableInstances() {
         getVariableScope().getVariables().stream()
-                .map(this::newInstanceOf)
+                .map(this::createVariableInstance)
                 .forEach(v -> variables.put(v.name(), v));
     }
 
-    public VariableInstance<Object> assignVariableInstance(String processName, String variableName, ValueReference reference) {
-        VariableScope variableScope = getVariableScope();
-        Variable variable = variableScope.findVariable(variableName);
-        if (variable == null) return null;
-        variableScope.validateVariable(processName, variableName, variable.getValue());
-        VariableInstance<Object> instance = getVariableInstance(variableName);
-        instance.setReference(reference);
-        return instance;
-    }
-
-    public VariableInstance<Object> newInstanceOf(Variable variable) {
+    private VariableInstance<?> createVariableInstance(Variable variable) {
         String name = variable.getName();
         if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
             return new CaseVariableInstance<>(this, variable);
         } else {
             return new ReferenceVariableInstance<>(this, variable)
-                    .beforeSet(beforeSetVariable(variable))
-                    .afterSet(afterSetVariable(variable));
+                    .onSetHandler(new ReferenceVariableInstance.OnSetHandler() {
+                        @Override
+                        public void before(Object oldValue, Object newValue) {
+                            beforeSetVariable(variable, oldValue, newValue);
+                        }
+
+                        @Override
+                        public void after(Object oldValue, Object newValue) {
+                            afterSetVariable(variable, oldValue, newValue);
+                        }
+                    });
         }
     }
 
-    private BiConsumer<Object, Object> beforeSetVariable(Variable variable) {
+    public VariableInstance<?> assignVariableInstance(String processName, String variableName, ValueReference reference) {
+        VariableScope variableScope = getVariableScope();
+        Variable variable = variableScope.findVariable(variableName);
+        if (variable == null) return null;
+        variableScope.validateVariable(processName, variableName, variable.getValue());
+        VariableInstance<?> instance = getVariableInstance(variableName);
+        instance.setReference(reference);
+        return instance;
+    }
+
+
+    private void beforeSetVariable(Variable variable, Object oldValue, Object newValue) {
         String name = variable.getName();
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
                 .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
 
-        return (oldValue, newValue) -> processEventSupport.fireBeforeVariableChanged(
+        processEventSupport.fireBeforeVariableChanged(
                 prefixed(name),
                 instancePrefixed(name),
                 oldValue,
@@ -126,12 +140,12 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 getProcessInstance().getKnowledgeRuntime());
     }
 
-    private BiConsumer<Object, Object> afterSetVariable(Variable variable) {
+    private void afterSetVariable(Variable variable, Object oldValue, Object newValue) {
         String name = variable.getName();
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
                 .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
 
-        return (oldValue, newValue) -> processEventSupport.fireAfterVariableChanged(
+        processEventSupport.fireAfterVariableChanged(
                 prefixed(name),
                 instancePrefixed(name),
                 oldValue,

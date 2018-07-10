@@ -94,10 +94,6 @@ public class VariableScope extends AbstractContext {
             "VariableScopes can only resolve variable names: " + param);
     }
 
-    public VariableScopeInstance newInstance(ProcessInstance processInstance, ProcessVariables variables) {
-        return ((ProcessInstanceImpl) processInstance).assign(variables);
-    }
-
 	public void validateVariable(String processName, String name, Object value) {
 		if (!variableStrictEnabled) {
 			return;

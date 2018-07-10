@@ -1,5 +1,22 @@
+/*
+ * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jbpm.process.core.context.variable;
 
+import java.io.Serializable;
 import java.util.function.BiConsumer;
 
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
@@ -9,13 +26,13 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
     private final Variable variableDescriptor;
     private final VariableScopeInstance parentScopeInstance;
     private ValueReference<T> delegate;
-    private BiConsumer<T, T> beforeSetHandler;
+    private OnSetHandler<T> onSet = OnSetHandler.empty();
     private BiConsumer<T, T> afterSetHandler;
 
     public ReferenceVariableInstance(VariableScopeInstance parentScopeInstance, Variable variableDescriptor) {
         this.parentScopeInstance = parentScopeInstance;
         this.variableDescriptor = variableDescriptor;
-        this.delegate = new SimpleVariableInstance<T>((T) variableDescriptor.getValue());
+        this.delegate = new SimpleVariableReference<>((T) variableDescriptor.getValue());
     }
 
     public String name() {
@@ -30,34 +47,44 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
     @Override
     public void set(T value) {
         T oldValue = delegate.get();
-        if (beforeSetHandler != null) beforeSetHandler.accept(oldValue, value);
+        onSet.before(oldValue, value);
         delegate.set(value);
-        if (afterSetHandler != null) afterSetHandler.accept(oldValue, value);
+        onSet.after(oldValue, value);
     }
 
     public void setReference(ValueReference<T> delegate) {
         // if (this.delegate != null) throw new IllegalStateException("Cannot setReference more than once");
         T value = delegate.get();
-        if (beforeSetHandler != null) beforeSetHandler.accept(null, value);
+        onSet.before(null, value);
         this.delegate = delegate;
-        if (afterSetHandler != null) afterSetHandler.accept(null, value);
+        onSet.after(null, value);
     }
 
-    public ValueReference<T> getDelegate() {
+    public ValueReference<T> getReference() {
         return delegate;
     }
 
-    /**
-     *
-     * @param beforeSetHandler (oldValue, newValue) -> {}
-     */
-    public ReferenceVariableInstance<T> beforeSet(BiConsumer<T, T> beforeSetHandler) {
-        this.beforeSetHandler = beforeSetHandler;
+    public ReferenceVariableInstance<T> onSetHandler(OnSetHandler<T> onSetHandler) {
+        this.onSet = onSetHandler;
         return this;
     }
 
-    public ReferenceVariableInstance<T> afterSet(BiConsumer<T, T> afterSetHandler) {
-        this.afterSetHandler = afterSetHandler;
-        return this;
+    public interface OnSetHandler<T> extends Serializable {
+        static <T> Empty<T> empty() { return Empty.instance; }
+        class Empty<T> implements OnSetHandler<T> {
+            static Empty instance = new Empty();
+
+            @Override
+            public void before(T oldValue, T newValue) {
+
+            }
+
+            @Override
+            public void after(T oldValue, T newValue) {
+
+            }
+        }
+        void before(T oldValue, T newValue);
+        void after(T oldValue, T newValue);
     }
 }
