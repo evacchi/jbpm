@@ -17,6 +17,7 @@
 package org.jbpm.process.core.context.variable;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
@@ -33,7 +34,8 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
         this.variableDescriptor = variableDescriptor;
         this.onSet = handler;
         this.delegate = new SimpleVariableReference<>(null);
-        set((T) variableDescriptor.getValue());
+        T value = (T) variableDescriptor.getValue();
+        if (value != null) set(value);
     }
 
     public String name() {
