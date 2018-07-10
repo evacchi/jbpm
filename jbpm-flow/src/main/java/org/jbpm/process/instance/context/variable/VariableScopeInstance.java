@@ -101,7 +101,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
         if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
             return new CaseVariableInstance<>(this, variable);
         } else {
-            return new ReferenceVariableInstance<>(
+            return new ReferenceVariableInstance(
                     this,
                     variable,
                     new Handler(
@@ -163,33 +163,6 @@ public class VariableScopeInstance extends AbstractContextInstance {
         VariableInstance<?> instance = getVariableInstance(variableName);
         instance.setReference(reference);
         return instance;
-    }
-
-
-    private void beforeSetVariable(String name, Object oldValue, Object newValue) {
-        ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
-                .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
-
-        processEventSupport.fireBeforeVariableChanged(
-                prefixed(name),
-                instancePrefixed(name),
-                oldValue,
-                newValue,
-                getProcessInstance(),
-                getProcessInstance().getKnowledgeRuntime());
-    }
-
-    private void afterSetVariable(String name, Object oldValue, Object newValue) {
-        ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
-                .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
-
-        processEventSupport.fireAfterVariableChanged(
-                prefixed(name),
-                instancePrefixed(name),
-                oldValue,
-                newValue,
-                getProcessInstance(),
-                getProcessInstance().getKnowledgeRuntime());
     }
 
     private String instancePrefixed(String name) {
