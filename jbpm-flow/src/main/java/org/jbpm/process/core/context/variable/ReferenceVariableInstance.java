@@ -23,11 +23,10 @@ import org.jbpm.process.instance.context.variable.VariableScopeInstance;
 
 public class ReferenceVariableInstance<T> implements VariableInstance<T> {
 
-    private final Variable variableDescriptor;
-    private final VariableScopeInstance parentScopeInstance;
+    transient private final Variable variableDescriptor;
+    transient private final VariableScopeInstance parentScopeInstance;
     private ValueReference<T> delegate;
     private OnSetHandler<T> onSet = OnSetHandler.empty();
-    private BiConsumer<T, T> afterSetHandler;
 
     public ReferenceVariableInstance(VariableScopeInstance parentScopeInstance, Variable variableDescriptor) {
         this.parentScopeInstance = parentScopeInstance;
