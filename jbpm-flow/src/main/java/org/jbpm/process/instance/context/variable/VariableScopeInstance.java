@@ -101,8 +101,10 @@ public class VariableScopeInstance extends AbstractContextInstance {
         if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
             return new CaseVariableInstance<>(this, variable);
         } else {
-            return new ReferenceVariableInstance<>(this, variable)
-                    .onSetHandler(new Handler(
+            return new ReferenceVariableInstance<>(
+                    this,
+                    variable,
+                    new Handler(
                             ((InternalProcessRuntime) getProcessInstance()
                                     .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport(),
                             getProcessInstance(),

@@ -25,13 +25,15 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
 
     transient private final Variable variableDescriptor;
     transient private final VariableScopeInstance parentScopeInstance;
+    transient private final OnSetHandler<T> onSet;
     private ValueReference<T> delegate;
-    private OnSetHandler<T> onSet = OnSetHandler.empty();
 
-    public ReferenceVariableInstance(VariableScopeInstance parentScopeInstance, Variable variableDescriptor) {
+    public ReferenceVariableInstance(VariableScopeInstance parentScopeInstance, Variable variableDescriptor, OnSetHandler<T> handler) {
         this.parentScopeInstance = parentScopeInstance;
         this.variableDescriptor = variableDescriptor;
-        this.delegate = new SimpleVariableReference<>((T) variableDescriptor.getValue());
+        this.onSet = handler;
+        this.delegate = new SimpleVariableReference<>(null);
+        set((T) variableDescriptor.getValue());
     }
 
     public String name() {
@@ -52,20 +54,15 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
     }
 
     public void setReference(ValueReference<T> delegate) {
-        // if (this.delegate != null) throw new IllegalStateException("Cannot setReference more than once");
+        T oldValue = this.delegate.get();
         T value = delegate.get();
-        onSet.before(null, value);
+        onSet.before(oldValue, value);
         this.delegate = delegate;
-        onSet.after(null, value);
+        onSet.after(oldValue, value);
     }
 
     public ValueReference<T> getReference() {
         return delegate;
-    }
-
-    public ReferenceVariableInstance<T> onSetHandler(OnSetHandler<T> onSetHandler) {
-        this.onSet = onSetHandler;
-        return this;
     }
 
     public interface OnSetHandler<T> extends Serializable {
