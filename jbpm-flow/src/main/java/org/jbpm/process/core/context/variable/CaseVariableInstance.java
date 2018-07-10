@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jbpm.process.core.context.variable;
 
 import java.util.Collection;
@@ -9,13 +25,14 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.process.CaseData;
 import org.kie.api.runtime.rule.FactHandle;
 
-public class CaseVariableInstance<T> extends ReferenceVariableInstance<T> {
+public class CaseVariableInstance<T> implements VariableInstance<T> {
 
     private final InternalKnowledgeRuntime knowledgeRuntime;
+    private final Variable variable;
 
     public CaseVariableInstance(VariableScopeInstance parentScopeInstance, Variable variable) {
-        super(parentScopeInstance, variable);
         this.knowledgeRuntime = parentScopeInstance.getProcessInstance().getKnowledgeRuntime();
+        this.variable = variable;
     }
 
     @Override
@@ -38,8 +55,6 @@ public class CaseVariableInstance<T> extends ReferenceVariableInstance<T> {
 
     @Override
     public void set(T value) {
-        super.set(value);
-
         Collection<CaseData> caseFiles = (Collection<CaseData>)
                 knowledgeRuntime.getObjects(new ClassObjectFilter(CaseData.class));
         if (caseFiles.size() == 1) {
@@ -51,4 +66,19 @@ public class CaseVariableInstance<T> extends ReferenceVariableInstance<T> {
         }
     }
 
+    @Override
+    public void setReference(ValueReference<T> value) {
+        // should probably log this? "Cannot setReference on a CaseVariableInstance". will set(value)
+        set(value.get());
+    }
+
+    @Override
+    public ValueReference<T> getReference() {
+        return this;
+    }
+
+    @Override
+    public String name() {
+        return variable.getName();
+    }
 }

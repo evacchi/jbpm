@@ -26,7 +26,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 	
 	public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey, 
 			                                     InternalKnowledgeRuntime kruntime,
-			                                     ProcessVariables variables) {
+			                                     ProcessVariables processVariables) {
 
 	    ProcessInstanceImpl processInstance = (ProcessInstanceImpl) createProcessInstance();
 		processInstance.setKnowledgeRuntime( kruntime );
@@ -45,10 +45,8 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
         processRuntime.getProcessInstanceManager()
     		.addProcessInstance( processInstance, correlationKey );
 
-        // set variable default values
-        // TODO: should be part of processInstanceImpl?
-        processInstance.assign(variables);
-        
+        processInstance.assign(processVariables);
+
         return processInstance;
 	}
 	

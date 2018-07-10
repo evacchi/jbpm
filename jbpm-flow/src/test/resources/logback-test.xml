@@ -9,13 +9,13 @@
     </encoder>
   </appender>
 
-  <logger name="org.jbpm" level="info"/>
+  <logger name="org.jbpm" level="trace"/>
   <logger name="com.arjuna" level="error"/>
   <logger name="org.hibernate" level="warn"/>
  
-  <logger name="org.jbpm" level="info" />
+  <logger name="org.jbpm" level="trace" />
   
-  <root level="info">
+  <root level="trace">
     <appender-ref ref="consoleAppender" />
   </root>
 
