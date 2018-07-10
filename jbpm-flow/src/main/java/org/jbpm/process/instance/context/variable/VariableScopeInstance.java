@@ -30,6 +30,7 @@ import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.ContextInstanceContainer;
 import org.jbpm.process.instance.InternalProcessRuntime;
+import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
@@ -101,18 +102,55 @@ public class VariableScopeInstance extends AbstractContextInstance {
             return new CaseVariableInstance<>(this, variable);
         } else {
             return new ReferenceVariableInstance<>(this, variable)
-                    .onSetHandler(new ReferenceVariableInstance.OnSetHandler() {
-                        @Override
-                        public void before(Object oldValue, Object newValue) {
-                            beforeSetVariable(variable, oldValue, newValue);
-                        }
+                    .onSetHandler(new Handler(
+                            ((InternalProcessRuntime) getProcessInstance()
+                                    .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport(),
+                            getProcessInstance(),
+                            name,
+                            prefixed(name),
+                            instancePrefixed(name)
+                    ));
 
-                        @Override
-                        public void after(Object oldValue, Object newValue) {
-                            afterSetVariable(variable, oldValue, newValue);
-                        }
-                    });
         }
+    }
+
+    private static class Handler implements ReferenceVariableInstance.OnSetHandler {
+        transient final ProcessEventSupport processEventSupport;
+        transient final ProcessInstance processInstance;
+        final String name;
+        private final String prefixed;
+        private final String instancePrefixed;
+
+        public Handler(ProcessEventSupport processEventSupport, ProcessInstance processInstance, String name, String prefixed, String instancePrefixed) {
+            this.processEventSupport = processEventSupport;
+            this.processInstance = processInstance;
+            this.name = name;
+            this.prefixed = prefixed;
+            this.instancePrefixed = instancePrefixed;
+        }
+
+        @Override
+        public void before(Object oldValue, Object newValue) {
+            processEventSupport.fireBeforeVariableChanged(
+                    prefixed,
+                    instancePrefixed,
+                    oldValue,
+                    newValue,
+                    processInstance,
+                    processInstance.getKnowledgeRuntime());
+        }
+
+        @Override
+        public void after(Object oldValue, Object newValue) {
+            processEventSupport.fireAfterVariableChanged(
+                    prefixed,
+                    instancePrefixed,
+                    oldValue,
+                    newValue,
+                    processInstance,
+                    processInstance.getKnowledgeRuntime());
+        }
+
     }
 
     public VariableInstance<?> assignVariableInstance(String processName, String variableName, ValueReference reference) {
@@ -126,8 +164,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
 
-    private void beforeSetVariable(Variable variable, Object oldValue, Object newValue) {
-        String name = variable.getName();
+    private void beforeSetVariable(String name, Object oldValue, Object newValue) {
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
                 .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
 
@@ -140,8 +177,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 getProcessInstance().getKnowledgeRuntime());
     }
 
-    private void afterSetVariable(Variable variable, Object oldValue, Object newValue) {
-        String name = variable.getName();
+    private void afterSetVariable(String name, Object oldValue, Object newValue) {
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance()
                 .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport();
 
