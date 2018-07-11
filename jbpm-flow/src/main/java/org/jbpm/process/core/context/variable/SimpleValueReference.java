@@ -16,21 +16,21 @@
 
 package org.jbpm.process.core.context.variable;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+public class SimpleValueReference<T> implements ValueReference<T> {
 
-public interface ValueReference<T> extends Serializable {
+    private T value;
 
-    T get();
-
-    void set(T value);
-
-    static <T> ValueReference<T> of(
-            Supplier<T> getter,
-            Consumer<T> setter) {
-        return new LambdaValueReference<>(getter, setter);
+    public SimpleValueReference(T value) {
+        this.value = value;
     }
 
-}
+    @Override
+    public void set(T value) {
+        this.value = value;
+    }
 
+    @Override
+    public T get() {
+        return value;
+    }
+}
