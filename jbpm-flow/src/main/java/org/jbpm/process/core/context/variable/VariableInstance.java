@@ -16,9 +16,15 @@
 
 package org.jbpm.process.core.context.variable;
 
-public interface VariableInstance<T> extends ValueReference<T>  {
+public interface VariableInstance<T> {
+
     String name();
 
+    T get();
+
+    void set(T value);
+
     void setReference(ValueReference<T> value);
+
     ValueReference<T> getReference();
 }
