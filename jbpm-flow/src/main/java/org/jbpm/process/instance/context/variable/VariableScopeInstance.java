@@ -51,7 +51,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public Object getVariable(String name) {
-        return getVariableInstance(name).get();
+        VariableInstance<Object> variableInstance = getVariableInstance(name);
+        return variableInstance == null? null : variableInstance.get();
     }
 
     public Map<String, Object> getVariables() {
