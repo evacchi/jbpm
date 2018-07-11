@@ -1,11 +1,11 @@
 /*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2018 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,6 @@
 package org.jbpm.process.core.context.variable;
 
 import java.io.Serializable;
-import java.util.Objects;
-import java.util.function.BiConsumer;
 
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
 
@@ -33,7 +31,7 @@ public class ReferenceVariableInstance<T> implements VariableInstance<T> {
         this.parentScopeInstance = parentScopeInstance;
         this.variableDescriptor = variableDescriptor;
         this.onSet = handler;
-        this.delegate = new SimpleVariableReference<>(null);
+        this.delegate = new SimpleValueReference<>(null);
         T value = (T) variableDescriptor.getValue();
         if (value != null) set(value);
     }
