@@ -572,8 +572,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller
                     .getContextInstance( variableScope );
             for ( JBPMMessages.Variable _variable : _instance.getVariableList() ) {
                 try {
-                    VariableInstance _value = (VariableInstance) ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable );
-                    variableScopeInstance.getVariableInstance(_variable.getName()).setReference(_value.getReference());
+                    Object _value = ProtobufProcessMarshaller.unmarshallVariableValue( context, _variable );
+                    variableScopeInstance.internalSetVariable( _variable.getName(),
+                                                               _value );
                 } catch ( ClassNotFoundException e ) {
                     throw new IllegalArgumentException( "Could not reload variable " + _variable.getName() );
                 }
@@ -622,8 +623,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) nodeInstance).getContextInstance( variableScope );
                     for ( JBPMMessages.Variable _variable : _node.getContent().getComposite().getVariableList() ) {
                         try {
-                            VariableInstance _value = (VariableInstance) ProtobufProcessMarshaller.unmarshallVariableValue( context, _variable );
-                            variableScopeInstance.getVariableInstance( _variable.getName()).setReference( _value.getReference() );
+                            Object _value = ProtobufProcessMarshaller.unmarshallVariableValue( context, _variable );
+                            variableScopeInstance.internalSetVariable( _variable.getName(), _value );
                         } catch ( ClassNotFoundException e ) {
                             throw new IllegalArgumentException( "Could not reload variable " + _variable.getName() );
                         }

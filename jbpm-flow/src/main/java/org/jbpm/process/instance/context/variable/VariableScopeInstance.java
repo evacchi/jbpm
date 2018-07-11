@@ -55,7 +55,9 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public Map<String, Object> getVariables() {
-        return Collections.unmodifiableMap(variables);
+        Map<String, Object> result = new HashMap<>();
+        variables.forEach((k, v) -> result.put(k, v.get()));
+        return Collections.unmodifiableMap(result);
     }
 
     public void setVariable(String name, Object value) {
