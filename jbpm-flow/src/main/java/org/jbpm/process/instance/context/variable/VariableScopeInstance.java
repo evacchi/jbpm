@@ -19,13 +19,12 @@ package org.jbpm.process.instance.context.variable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import org.drools.core.event.ProcessEventSupport;
 import org.jbpm.process.core.context.variable.CaseVariableInstance;
 import org.jbpm.process.core.context.variable.ReferenceVariableInstance;
-import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.ValueReference;
+import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.VariableInstance;
 import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.instance.ContextInstanceContainer;
@@ -52,12 +51,35 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     public Object getVariable(String name) {
         VariableInstance<Object> variableInstance = getVariableInstance(name);
-        return variableInstance == null? null : variableInstance.get();
+
+        if (variableInstance != null) {
+            Object value = variableInstance.get();
+            if (value != null) return value;
+        }
+
+        // support for processInstanceId and parentProcessInstanceId
+        if ("processInstanceId".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getId();
+        } else if ("parentProcessInstanceId".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getParentProcessInstanceId();
+        }
+
+
+        if (getProcessInstance() != null && getProcessInstance().getKnowledgeRuntime() != null) {
+            // support for globals
+            Object value = getProcessInstance().getKnowledgeRuntime().getGlobal(name);
+            if (value != null) {
+                return value;
+            }
+            // case is now handled implicitly at the very top
+        }
+
+        return null;
     }
 
     public Map<String, Object> getVariables() {
         Map<String, Object> result = new HashMap<>();
-        variables.forEach((k, v) -> result.put(k, v.get()));
+        variables.forEach((k, v) -> result.put(k, v.getReference().get()));
         return Collections.unmodifiableMap(result);
     }
 

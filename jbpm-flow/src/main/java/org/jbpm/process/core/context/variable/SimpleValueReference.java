@@ -16,7 +16,10 @@
 
 package org.jbpm.process.core.context.variable;
 
-public class SimpleValueReference<T> implements ValueReference<T> {
+import java.io.Serializable;
+
+public class SimpleValueReference<T> implements ValueReference<T>,
+                                                Serializable {
 
     private T value;
 

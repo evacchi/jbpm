@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jbpm.process.core.context.variable.LambdaValueReference;
 import org.jbpm.process.core.context.variable.SimpleValueReference;
 import org.jbpm.process.core.context.variable.ValueReference;
 import org.kie.api.runtime.rule.RuleUnit;
@@ -72,7 +73,7 @@ public abstract class ProcessVariables implements Serializable {
                     .stream()
                     .collect(Collectors.toMap(
                             FeatureDescriptor::getName,
-                            pd -> ValueReference.of(
+                            pd -> new LambdaValueReference<>(
                                     () -> getPropertyValue(pd),
                                     v -> setPropertyValue(pd, v))));
         }
