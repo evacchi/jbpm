@@ -16,13 +16,11 @@
 
 package org.jbpm.process.instance.context.variable;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.drools.core.ClassObjectFilter;
 import org.drools.core.event.ProcessEventSupport;
 import org.jbpm.process.core.context.variable.CaseVariableInstance;
 import org.jbpm.process.core.context.variable.ReferenceVariableInstance;
@@ -36,7 +34,6 @@ import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
-import org.kie.api.runtime.process.CaseData;
 
 /**
  *
@@ -58,7 +55,9 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
         if (variableInstance != null) {
             Object value = variableInstance.get();
-            if (value != null) return value;
+            if (value != null) {
+                return value;
+            }
         }
 
         // support for processInstanceId and parentProcessInstanceId
@@ -67,7 +66,6 @@ public class VariableScopeInstance extends AbstractContextInstance {
         } else if ("parentProcessInstanceId".equals(name) && getProcessInstance() != null) {
             return getProcessInstance().getParentProcessInstanceId();
         }
-
 
         if (getProcessInstance() != null && getProcessInstance().getKnowledgeRuntime() != null) {
             // support for globals
@@ -103,8 +101,14 @@ public class VariableScopeInstance extends AbstractContextInstance {
                     "The name of a variable may not be null!");
         }
 
-        Optional.ofNullable(getVariableInstance(name))
-                .orElseGet(() -> this.<Object>createVariableInstance(new Variable(name))).set(value);
+        VariableInstance<Object> variableInstance = getVariableInstance(name);
+        if (value == null && variableInstance == null) {
+            return;
+        }
+        if (value != null) {
+            Optional.ofNullable(variableInstance)
+                    .orElseGet(() -> this.<Object>createVariableInstance(new Variable(name))).set(value);
+        }
     }
 
     public void internalSetVariable(String name, Object value) {
@@ -146,6 +150,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
             return null;
         }
     }
+
     private <T> VariableInstance<T> createVariableInstance(Variable variable) {
         VariableInstance<T> caseVar = createCaseVariableInstance(variable);
         if (caseVar != null) {
@@ -163,11 +168,11 @@ public class VariableScopeInstance extends AbstractContextInstance {
                             prefixed(name),
                             instancePrefixed(name)
                     ));
-
         }
     }
 
     private static class Handler<T> implements ReferenceVariableInstance.OnSetHandler<T> {
+
         transient final ProcessEventSupport processEventSupport;
         transient final ProcessInstance processInstance;
         final String name;
@@ -203,13 +208,14 @@ public class VariableScopeInstance extends AbstractContextInstance {
                     processInstance,
                     processInstance.getKnowledgeRuntime());
         }
-
     }
 
     public VariableInstance<?> assignVariableInstance(String processName, String variableName, ValueReference reference) {
         VariableScope variableScope = getVariableScope();
         Variable variable = variableScope.findVariable(variableName);
-        if (variable == null) return null;
+        if (variable == null) {
+            return null;
+        }
         variableScope.validateVariable(processName, variableName, variable.getValue());
         VariableInstance<?> instance = getVariableInstance(variableName);
         instance.setReference(reference);
