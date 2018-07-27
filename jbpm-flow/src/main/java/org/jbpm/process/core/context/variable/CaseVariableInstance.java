@@ -97,6 +97,6 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
 
     @Override
     public String name() {
-        return caseFileName;
+        return variable.getName();
     }
 }

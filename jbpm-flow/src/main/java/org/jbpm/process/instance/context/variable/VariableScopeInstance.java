@@ -114,9 +114,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     public <T> VariableInstance<T> getVariableInstance(String name) {
         VariableInstance<T> variableInstance = (VariableInstance<T>) variables.get(name);
-        Optional.ofNullable(variableInstance)
+        return Optional.ofNullable(variableInstance)
                 .orElseGet(() -> this.<T>createVariableInstance(new Variable(name)));
-        return variableInstance;
     }
 
     public VariableScope getVariableScope() {
@@ -139,12 +138,20 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 .forEach(v -> variables.put(v.name(), v));
     }
 
-    private <T> VariableInstance<T> createVariableInstance(Variable variable) {
+    private <T> VariableInstance<T> createCaseVariableInstance(Variable variable) {
         String name = variable.getName();
         if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
-
             return new CaseVariableInstance<>(this, variable);
         } else {
+            return null;
+        }
+    }
+    private <T> VariableInstance<T> createVariableInstance(Variable variable) {
+        VariableInstance<T> caseVar = createCaseVariableInstance(variable);
+        if (caseVar != null) {
+            return caseVar;
+        } else {
+            String name = variable.getName();
             return new ReferenceVariableInstance<>(
                     this,
                     variable,
