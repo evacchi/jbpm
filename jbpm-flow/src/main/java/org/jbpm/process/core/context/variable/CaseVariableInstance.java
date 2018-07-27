@@ -39,12 +39,8 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
             if (caseFiles.size() == 1) {
                 CaseData caseFile = caseFiles.iterator().next();
                 // check if there is case file prefix and if so remove it before checking case file data
-                final String lookUpName =
-                        name().startsWith(VariableScope.CASE_FILE_PREFIX) ?
-                                name().replaceFirst(VariableScope.CASE_FILE_PREFIX, "") :
-                                name();
                 if (caseFile != null) {
-                    return (T) caseFile.getData(lookUpName);
+                    return (T) caseFile.getData(caseFileName);
                 }
             }
             return null;
@@ -58,7 +54,7 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
                 CaseData caseFile = caseFiles.iterator().next();
                 FactHandle factHandle = knowledgeRuntime.getFactHandle(caseFile);
                 Objects.requireNonNull(factHandle, "factHandle for " + caseFileName + " was null");
-                caseFile.add(name(), value);
+                caseFile.add(caseFileName, value);
                 knowledgeRuntime.update(factHandle, caseFile);
                 ((KieSession) knowledgeRuntime).fireAllRules();
             }
@@ -68,7 +64,12 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
     public CaseVariableInstance(VariableScopeInstance parentScopeInstance, Variable variable) {
         this.knowledgeRuntime = parentScopeInstance.getProcessInstance().getKnowledgeRuntime();
         this.variable = variable;
-        this.caseFileName = variable.getName().substring("caseFile_".length());
+        if (variable.getName().startsWith(VariableScope.CASE_FILE_PREFIX)) {
+            this.caseFileName = variable.getName().substring(VariableScope.CASE_FILE_PREFIX.length());
+        } else {
+            // should probably issue a warning
+            this.caseFileName = variable.getName();
+        }
     }
 
     @Override
