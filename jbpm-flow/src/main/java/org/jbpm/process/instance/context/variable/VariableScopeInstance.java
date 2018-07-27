@@ -16,10 +16,13 @@
 
 package org.jbpm.process.instance.context.variable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import org.drools.core.ClassObjectFilter;
 import org.drools.core.event.ProcessEventSupport;
 import org.jbpm.process.core.context.variable.CaseVariableInstance;
 import org.jbpm.process.core.context.variable.ReferenceVariableInstance;
@@ -33,6 +36,7 @@ import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
+import org.kie.api.runtime.process.CaseData;
 
 /**
  *
@@ -71,8 +75,18 @@ public class VariableScopeInstance extends AbstractContextInstance {
             if (value != null) {
                 return value;
             }
-            // case is now handled implicitly at the very top
-        }
+//            // support for case file data
+//            @SuppressWarnings("unchecked")
+//            Collection<CaseData> caseFiles = (Collection<CaseData>) getProcessInstance().getKnowledgeRuntime().getObjects(new ClassObjectFilter(CaseData.class));
+//            if (caseFiles.size() == 1) {
+//                CaseData caseFile = caseFiles.iterator().next();
+//                // check if there is case file prefix and if so remove it before checking case file data
+//                final String lookUpName = name.startsWith(VariableScope.CASE_FILE_PREFIX) ? name.replaceFirst(VariableScope.CASE_FILE_PREFIX, "") : name;
+//                if (caseFile != null) {
+//                    return caseFile.getData(lookUpName);
+//                }
+//            }
+//        }
 
         return null;
     }
@@ -89,7 +103,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
                     "The name of a variable may not be null!");
         }
 
-        getVariableInstance(name).set(value);
+        Optional.ofNullable(getVariableInstance(name))
+                .orElseGet(() -> this.<Object>createVariableInstance(new Variable(name))).set(value);
     }
 
     public void internalSetVariable(String name, Object value) {
@@ -98,7 +113,10 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public <T> VariableInstance<T> getVariableInstance(String name) {
-        return (VariableInstance<T>) variables.get(name);
+        VariableInstance<T> variableInstance = (VariableInstance<T>) variables.get(name);
+        Optional.ofNullable(variableInstance)
+                .orElseGet(() -> this.<T>createVariableInstance(new Variable(name)));
+        return variableInstance;
     }
 
     public VariableScope getVariableScope() {
@@ -121,15 +139,16 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 .forEach(v -> variables.put(v.name(), v));
     }
 
-    private VariableInstance<?> createVariableInstance(Variable variable) {
+    private <T> VariableInstance<T> createVariableInstance(Variable variable) {
         String name = variable.getName();
         if (name.startsWith(VariableScope.CASE_FILE_PREFIX)) {
+
             return new CaseVariableInstance<>(this, variable);
         } else {
-            return new ReferenceVariableInstance(
+            return new ReferenceVariableInstance<>(
                     this,
                     variable,
-                    new Handler(
+                    new Handler<>(
                             ((InternalProcessRuntime) getProcessInstance()
                                     .getKnowledgeRuntime().getProcessRuntime()).getProcessEventSupport(),
                             getProcessInstance(),
@@ -141,7 +160,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
         }
     }
 
-    private static class Handler implements ReferenceVariableInstance.OnSetHandler {
+    private static class Handler<T> implements ReferenceVariableInstance.OnSetHandler<T> {
         transient final ProcessEventSupport processEventSupport;
         transient final ProcessInstance processInstance;
         final String name;
