@@ -17,6 +17,7 @@
 package org.jbpm.process.core.context.variable;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.drools.core.ClassObjectFilter;
 import org.drools.core.common.InternalKnowledgeRuntime;
@@ -29,41 +30,55 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
 
     private final InternalKnowledgeRuntime knowledgeRuntime;
     private final Variable variable;
+    private final String caseFileName;
+    private final ValueReference<T> valueReference = new ValueReference<T>() {
+        @Override
+        public T get() {
+            Collection<CaseData> caseFiles = (Collection<CaseData>)
+                    knowledgeRuntime.getObjects(new ClassObjectFilter(CaseData.class));
+            if (caseFiles.size() == 1) {
+                CaseData caseFile = caseFiles.iterator().next();
+                // check if there is case file prefix and if so remove it before checking case file data
+                final String lookUpName =
+                        name().startsWith(VariableScope.CASE_FILE_PREFIX) ?
+                                name().replaceFirst(VariableScope.CASE_FILE_PREFIX, "") :
+                                name();
+                if (caseFile != null) {
+                    return (T) caseFile.getData(lookUpName);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void set(T value) {
+            Collection<CaseData> caseFiles = (Collection<CaseData>)
+                    knowledgeRuntime.getObjects(new ClassObjectFilter(CaseData.class));
+            if (caseFiles.size() == 1) {
+                CaseData caseFile = caseFiles.iterator().next();
+                FactHandle factHandle = knowledgeRuntime.getFactHandle(caseFile);
+                Objects.requireNonNull(factHandle, "factHandle for " + caseFileName + " was null");
+                caseFile.add(name(), value);
+                knowledgeRuntime.update(factHandle, caseFile);
+                ((KieSession) knowledgeRuntime).fireAllRules();
+            }
+        }
+    };
 
     public CaseVariableInstance(VariableScopeInstance parentScopeInstance, Variable variable) {
         this.knowledgeRuntime = parentScopeInstance.getProcessInstance().getKnowledgeRuntime();
         this.variable = variable;
+        this.caseFileName = variable.getName().substring("caseFile_".length());
     }
 
     @Override
     public T get() {
-        Collection<CaseData> caseFiles = (Collection<CaseData>)
-                knowledgeRuntime.getObjects(new ClassObjectFilter(CaseData.class));
-        if (caseFiles.size() == 1) {
-            CaseData caseFile = caseFiles.iterator().next();
-            // check if there is case file prefix and if so remove it before checking case file data
-            final String lookUpName =
-                    name().startsWith(VariableScope.CASE_FILE_PREFIX) ?
-                            name().replaceFirst(VariableScope.CASE_FILE_PREFIX, "") :
-                            name();
-            if (caseFile != null) {
-                return (T) caseFile.getData(lookUpName);
-            }
-        }
-        return null;
+        return valueReference.get();
     }
 
     @Override
     public void set(T value) {
-        Collection<CaseData> caseFiles = (Collection<CaseData>)
-                knowledgeRuntime.getObjects(new ClassObjectFilter(CaseData.class));
-        if (caseFiles.size() == 1) {
-            CaseData caseFile = caseFiles.iterator().next();
-            FactHandle factHandle = knowledgeRuntime.getFactHandle(caseFile);
-            caseFile.add(name(), value);
-            knowledgeRuntime.update(factHandle, caseFile);
-            ((KieSession) knowledgeRuntime).fireAllRules();
-        }
+        valueReference.set(value);
     }
 
     @Override
@@ -75,11 +90,12 @@ public class CaseVariableInstance<T> implements VariableInstance<T> {
     @Override
     public ValueReference<T> getReference() {
         // fixme: is a CaseVariable really an InstanceVariable? Shall we use a ValueReference?
-        throw new UnsupportedOperationException("Cannot get reference from a Case variable");
+//        throw new UnsupportedOperationException("Cannot get reference from a Case variable");
+        return valueReference;
     }
 
     @Override
     public String name() {
-        return variable.getName();
+        return caseFileName;
     }
 }
