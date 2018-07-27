@@ -86,7 +86,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
 //                    return caseFile.getData(lookUpName);
 //                }
 //            }
-//        }
+        }
 
         return null;
     }
