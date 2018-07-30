@@ -16,11 +16,13 @@
 
 package org.jbpm.process.instance.context.variable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.drools.core.ClassObjectFilter;
 import org.drools.core.event.ProcessEventSupport;
 import org.jbpm.process.core.context.variable.CaseVariableInstance;
 import org.jbpm.process.core.context.variable.ReferenceVariableInstance;
@@ -34,6 +36,7 @@ import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.context.AbstractContextInstance;
 import org.jbpm.workflow.core.Node;
 import org.jbpm.workflow.instance.node.CompositeContextNodeInstance;
+import org.kie.api.runtime.process.CaseData;
 
 /**
  *
@@ -73,17 +76,17 @@ public class VariableScopeInstance extends AbstractContextInstance {
             if (value != null) {
                 return value;
             }
-//            // support for case file data
-//            @SuppressWarnings("unchecked")
-//            Collection<CaseData> caseFiles = (Collection<CaseData>) getProcessInstance().getKnowledgeRuntime().getObjects(new ClassObjectFilter(CaseData.class));
-//            if (caseFiles.size() == 1) {
-//                CaseData caseFile = caseFiles.iterator().next();
-//                // check if there is case file prefix and if so remove it before checking case file data
-//                final String lookUpName = name.startsWith(VariableScope.CASE_FILE_PREFIX) ? name.replaceFirst(VariableScope.CASE_FILE_PREFIX, "") : name;
-//                if (caseFile != null) {
-//                    return caseFile.getData(lookUpName);
-//                }
-//            }
+            // support for case file data
+            @SuppressWarnings("unchecked")
+            Collection<CaseData> caseFiles = (Collection<CaseData>) getProcessInstance().getKnowledgeRuntime().getObjects(new ClassObjectFilter(CaseData.class));
+            if (caseFiles.size() == 1) {
+                CaseData caseFile = caseFiles.iterator().next();
+                // check if there is case file prefix and if so remove it before checking case file data
+                final String lookUpName = name.startsWith(VariableScope.CASE_FILE_PREFIX) ? name.replaceFirst(VariableScope.CASE_FILE_PREFIX, "") : name;
+                if (caseFile != null) {
+                    return caseFile.getData(lookUpName);
+                }
+            }
         }
 
         return null;
