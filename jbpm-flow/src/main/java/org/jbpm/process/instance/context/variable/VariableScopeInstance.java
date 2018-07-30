@@ -121,8 +121,15 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     public <T> VariableInstance<T> getVariableInstance(String name) {
         VariableInstance<T> variableInstance = (VariableInstance<T>) variables.get(name);
-        return Optional.ofNullable(variableInstance)
-                .orElseGet(() -> this.<T>createVariableInstance(new Variable(name)));
+        if (variableInstance == null) {
+            variableInstance = createVariableInstance(new Variable(name));
+            if (variableInstance == null) {
+                return null;
+            } else {
+                variables.put(name, variableInstance);
+            }
+        }
+        return variableInstance;
     }
 
     public VariableScope getVariableScope() {
