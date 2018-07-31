@@ -94,7 +94,9 @@ public class VariableScopeInstance extends AbstractContextInstance {
 
     public Map<String, Object> getVariables() {
         Map<String, Object> result = new HashMap<>();
-        variables.values().stream().filter(v -> !(v instanceof CaseVariableInstance)).forEach(v -> result.put(v.name(), v.getReference().get()));
+        variables.values().stream()
+                .filter(v -> !(v instanceof CaseVariableInstance))
+                .forEach(v -> result.put(v.name(), v.getReference().get()));
         return Collections.unmodifiableMap(result);
     }
 
@@ -131,13 +133,8 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     private <T> VariableInstance<T> addVariableInstance(String name) {
-        VariableInstance<T> variableInstance;
-        variableInstance = createVariableInstance(new Variable(name));
-        if (variableInstance == null) {
-            return null;
-        } else if (!(variableInstance instanceof CaseVariableInstance)) {
-            variables.put(name, variableInstance);
-        }
+        VariableInstance<T> variableInstance = createVariableInstance(new Variable(name));
+        variables.put(name, variableInstance);
         return variableInstance;
     }
 
@@ -233,10 +230,11 @@ public class VariableScopeInstance extends AbstractContextInstance {
         VariableScope variableScope = getVariableScope();
         Variable variable = variableScope.findVariable(variableName);
         if (variable == null) {
-            return null;
+            variable = new Variable(variableName);
+            variable.setMetaData("on-the-fly", true);
         }
         variableScope.validateVariable(processName, variableName, variable.getValue());
-        VariableInstance<?> instance = getVariableInstance(variableName);
+        VariableInstance<?> instance = addVariableInstance(variableName);
         instance.setReference(reference);
         return instance;
     }
