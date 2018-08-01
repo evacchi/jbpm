@@ -107,13 +107,14 @@ public class VariableScopeInstance extends AbstractContextInstance {
         }
 
         VariableInstance<Object> variableInstance = getVariableInstance(name);
-        if (value == null && variableInstance == null) {
-            return;
+        if (variableInstance == null) {
+            if (value == null) {
+                return;
+            } else {
+                variableInstance = addVariableInstance(name);
+            }
         }
-        if (value != null) {
-            Optional.ofNullable(variableInstance)
-                    .orElseGet(() -> this.<Object>createVariableInstance(new Variable(name))).set(value);
-        }
+        variableInstance.set(value);
     }
 
     public void internalSetVariable(String name, Object value) {
