@@ -196,18 +196,6 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
         return null;
     }
 
-    public ProcessInstance startProcess(String processId,
-                                        ProcessVariables processVariables,
-                                        String trigger) {
-        ProcessInstance processInstance = createProcessInstance(processId, null, processVariables);
-        if ( processInstance != null ) {
-            // start process instance
-            return startProcessInstance(processInstance.getId(), trigger);
-        }
-        return null;
-    }
-
-
     public ProcessInstance startProcessInstance(long processInstanceId) {
         return startProcessInstance(processInstanceId, null);
     }
