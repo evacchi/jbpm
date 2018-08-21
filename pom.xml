@@ -99,6 +99,7 @@
     <module>jbpm-workitems</module>
     <module>jbpm-human-task</module>
     <module>jbpm-runtime-manager</module>
+    <module>jbpm-units</module>
     <module>jbpm-services</module>
     <module>jbpm-document</module>
     <module>jbpm-test</module>

@@ -77,10 +77,10 @@ public class ProcessEventListenerTest extends AbstractBaseTest {
         assertEquals("MyValue", ((VariableScopeInstance)
                                     ((org.jbpm.process.instance.ProcessInstance) processInstance)
                                         .getContextInstance(VariableScope.VARIABLE_SCOPE)).getVariable("MyVar"));
-        assertEquals( 28, processEventList.size() );
         for (ProcessEvent e: processEventList) {
             logger.debug(e.toString());
         }
+        assertEquals( 28, processEventList.size() );
         assertEquals( "org.drools.core.event", ((ProcessStartedEvent) processEventList.get(2)).getProcessInstance().getProcessId());
 
     }

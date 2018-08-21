@@ -15,7 +15,7 @@
   <itemDefinition id="_countItem" structureRef="Integer" />
   <itemDefinition id="_iItem" structureRef="Integer" />
 
-  <process processType="Private" isExecutable="true" id="com.sample.looping" name="Looping" tns:packageName="com.sample" >
+  <process processType="Private" isExecutable="true" id="org.jbpm.ruleunits.CounterUnit" name="ZAZZO" tns:packageName="org.jbpm.ruleunits" tns:unit="org.jbpm.units.CounterUnit" >
 
     <!-- process variables -->
     <property id="count" itemSubjectRef="_countItem"/>
@@ -43,7 +43,7 @@
 
     <!-- connections -->
     <sequenceFlow id="_4-_2" sourceRef="_4" targetRef="_2" name="i &lt; count" tns:priority="1" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.java.com/java" >return i &lt; count;</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="http://www.java.com/java">return i &lt; count;</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_7-_2" sourceRef="_7" targetRef="_2" />
     <sequenceFlow id="_2-_3" sourceRef="_2" targetRef="_3" />
@@ -57,7 +57,7 @@
   </process>
 
   <bpmndi:BPMNDiagram>
-    <bpmndi:BPMNPlane bpmnElement="com.sample.looping" >
+    <bpmndi:BPMNPlane bpmnElement="org.jbpm.ruleunits.CounterUnit" >
       <bpmndi:BPMNShape bpmnElement="_1" >
         <dc:Bounds x="12" y="84" width="48" height="48" />
       </bpmndi:BPMNShape>

@@ -191,6 +191,9 @@ public class ProcessBuilderImpl implements org.drools.compiler.compiler.ProcessB
 				            }
 				        }
 				        p.addProcess( process );
+				        if ( process instanceof  ProcessImpl ) {
+				            p.getRuleUnitRegistry().getRuleUnitFor(((ProcessImpl) process).getUnit());
+                        }
 				        // NPE for validator
 				        if (validator.compilationSupported()) {
 				            pkgRegistry.compileAll();
