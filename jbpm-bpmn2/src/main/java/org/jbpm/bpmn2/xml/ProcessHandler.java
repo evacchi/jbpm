@@ -130,8 +130,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
 		String name = attrs.getValue("name");
 		String packageName = attrs.getValue("http://www.jboss.org/drools", "packageName");
 		String dynamic = attrs.getValue("http://www.jboss.org/drools", "adHoc");
-        String version = attrs.getValue("http://www.jboss.org/drools", "version");
-        String ruleUnit = attrs.getValue("http://www.jboss.org/drools", "ruleUnit");
+		String version = attrs.getValue("http://www.jboss.org/drools", "version");
 
 		RuleFlowProcess process = new RuleFlowProcess();
 		process.setAutoComplete(true);
@@ -152,9 +151,6 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
 		if (version != null) {
 			process.setVersion(version);
 		}
-		if (ruleUnit != null) {
-		    process.setRuleUnit(ruleUnit);
-        }
 
 		((ProcessBuildData) parser.getData()).addProcess(process);
 		// register the definitions object as metadata of process.
@@ -1020,3 +1016,4 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
     }
     
 }
+
