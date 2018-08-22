@@ -25,13 +25,13 @@ import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.runtime.rule.RuleUnit;
 
 // this should not extend RuleUnit directly, we should create an abstract class
-public class JBPMUnitExecutorSession extends RuleUnitExecutorSession {
+public class ProcessUnitExecutorSession extends RuleUnitExecutorSession {
 
-    public JBPMUnitExecutorSession() {
+    public ProcessUnitExecutorSession() {
         super();
     }
 
-    public JBPMUnitExecutorSession(KieSession session) {
+    public ProcessUnitExecutorSession(KieSession session) {
         super(session);
     }
 
