@@ -22,11 +22,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         CounterUnit counterUnit = new CounterUnit();
-
-        new ProcessUnitExecutorSession()
-                .bind(KieServices.Factory.get()
-                              .getKieClasspathContainer()
-                              .getKieBase())
+        new ProcessUnitExecutor(
+                KieServices.Factory.get()
+                        .getKieClasspathContainer()
+                        .getKieBase()
+                        .newKieSession())
                 .bindVariable("count", 5)
                 .run(counterUnit);
     }
