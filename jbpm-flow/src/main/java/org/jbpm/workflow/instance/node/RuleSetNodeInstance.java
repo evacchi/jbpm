@@ -16,6 +16,7 @@
 
 package org.jbpm.workflow.instance.node;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +56,12 @@ import org.kie.api.runtime.process.DataTransformer;
 import org.kie.api.runtime.process.EventListener;
 import org.kie.api.runtime.process.NodeInstance;
 import org.kie.api.runtime.rule.FactHandle;
+import org.kie.api2.api.DataSource;
+import org.kie.api2.api.Kie;
+import org.kie.api2.api.ProcessUnit;
+import org.kie.api2.api.ProcessUnitInstance;
+import org.kie.api2.api.RuleUnit;
+import org.kie.api2.api.RuleUnitInstance;
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.api.core.DMNMessage.Severity;
 import org.kie.dmn.api.core.DMNModel;
@@ -115,7 +122,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     // if was not found by name try to look it up by id
                     dmnModel = runtime.getModelById(namespace, model);
                 }
-                
+
                 if (dmnModel == null) {
                     throw new IllegalArgumentException("DMN model '" + model + "' not found with namespace '" + namespace + "'");
                 }
@@ -147,36 +154,27 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                 setRuleFlowGroup(resolveRuleFlowGroup(ruleSetNode.getRuleFlowGroup()));
 
                 //proceed
-                for (Entry<String, Object> entry : inputs.entrySet()) {
-                    if (FIRE_RULE_LIMIT_PARAMETER.equals(entry.getKey())) {
-                        // don't put control parameter for fire limit into working memory
-                        continue;
-                    }
-                    
-                    String inputKey = getRuleFlowGroup() + "_" + getProcessInstance().getId() + "_" + entry.getKey();
-
-                    factHandles.put(inputKey, kruntime.insert(entry.getValue()));
-                }
+                insertIntoWorkingMemory(kruntime, inputs);
 
                 if (actAsWaitState()) {
                     addRuleSetListener();
-                    ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
-                            .activateRuleFlowGroup(getRuleFlowGroup(), getProcessInstance().getId(), getUniqueId());
-
+                    scheduleRuleExecution();
                 } else {
                     int fireLimit = DEFAULT_FIRE_RULE_LIMIT;
-                    
+
                     if (inputs.containsKey(FIRE_RULE_LIMIT_PARAMETER)) {
                         fireLimit = Integer.parseInt(inputs.get(FIRE_RULE_LIMIT_PARAMETER).toString());
                     }
-                    ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
-                            .activateRuleFlowGroup(getRuleFlowGroup(), getProcessInstance().getId(), getUniqueId());
 
-                    int fired = ((KieSession) getProcessInstance().getKnowledgeRuntime()).fireAllRules(fireLimit);
-                    if (fired == fireLimit) {
-                        throw new RuntimeException("Fire rule limit reached " + fireLimit + ", limit can be set via system property " + FIRE_RULE_LIMIT_PROPERTY 
-                                                   + " or via data input of business rule task named " + FIRE_RULE_LIMIT_PARAMETER);
-                    }
+                    RuleUnitInstance<? extends RuleUnit> ruleUnitInstance = scheduleRuleExecution();
+                    ruleUnitInstance.run(); // we'll ignore fireLimit for this demo...
+
+//
+//                    int fired = ((KieSession) getProcessInstance().getKnowledgeRuntime()).fireAllRules(fireLimit);
+//                    if (fired == fireLimit) {
+//                        throw new RuntimeException("Fire rule limit reached " + fireLimit + ", limit can be set via system property " + FIRE_RULE_LIMIT_PROPERTY
+//                                                   + " or via data input of business rule task named " + FIRE_RULE_LIMIT_PARAMETER);
+//                    }
 
                     removeEventListeners();
                     retractFacts();
@@ -187,6 +185,56 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
             handleException(e);
         }
     }
+
+    private void insertIntoWorkingMemory(KieRuntime kruntime, Map<String, Object> inputs) {
+        for (Entry<String, Object> entry : inputs.entrySet()) {
+            if (FIRE_RULE_LIMIT_PARAMETER.equals(entry.getKey())) {
+                // don't put control parameter for fire limit into working memory
+                continue;
+            }
+
+            String inputKey = getRuleFlowGroup() + "_" + getProcessInstance().getId() + "_" + entry.getKey();
+
+            factHandles.put(inputKey, kruntime.insert(entry.getValue()));
+        }
+    }
+
+    private RuleUnitInstance<? extends RuleUnit> scheduleRuleExecution() throws Exception {
+//        ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
+//                .activateRuleFlowGroup(getRuleFlowGroup(), getProcessInstance().getId(), getUniqueId());
+
+        Kie.Runtime.Provider rtProvider = (Kie.Runtime.Provider) getProcessInstance().getKnowledgeRuntime();
+        Kie.Runtime runtime = rtProvider.runtime();
+        Kie.Runtime.Factory factory = runtime.factory();
+
+        ProcessUnit processUnit = getProcessUnitInstance().unit();
+
+        Class<?> ruleUnitClass = Class.forName(getRuleFlowGroup());
+        RuleUnit ruleUnit = (RuleUnit) ruleUnitClass.getConstructor().newInstance();
+
+        copyFields(processUnit.getClass(), processUnit,
+                   ruleUnitClass, ruleUnit);
+
+        return factory.of(ruleUnit);
+    }
+
+    ProcessUnitInstance<?> getProcessUnitInstance() {
+        return (ProcessUnitInstance<?>) getProcessInstance().getMetaData().get("__PROCESS_UNIT_INSTANCE__");
+    }
+
+    private void copyFields(Class<?> processUnitClass, ProcessUnit processUnit, Class<?> ruleUnitClass, RuleUnit ruleUnit) throws NoSuchFieldException, IllegalAccessException {
+        Field[] processUnitFields = processUnitClass.getDeclaredFields();
+        for (int i = 0; i < processUnitFields.length; i++) {
+            Field src = processUnitFields[i];
+            src.setAccessible(true);
+            Field dest = ruleUnitClass.getDeclaredField(src.getName());
+            dest.setAccessible(true);
+            if (dest!=null) {
+                dest.set(ruleUnit, src.get(processUnit));
+            }
+        }
+    }
+
 
     private void handleException(Throwable e) {
         ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(e);
