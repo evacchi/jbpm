@@ -38,10 +38,10 @@ import org.jbpm.marshalling.impl.JBPMMessages.ProcessTimer.TimerInstance.Builder
 import org.jbpm.marshalling.impl.JBPMMessages.Variable;
 import org.jbpm.marshalling.impl.JBPMMessages.VariableContainer;
 import org.jbpm.process.instance.InternalProcessRuntime;
+import org.jbpm.process.instance.timer.ProcessJobContext;
+import org.jbpm.process.instance.timer.StartProcessJobContext;
 import org.jbpm.process.instance.timer.TimerInstance;
 import org.jbpm.process.instance.timer.TimerManager;
-import org.jbpm.process.instance.timer.TimerManager.ProcessJobContext;
-import org.jbpm.process.instance.timer.TimerManager.StartProcessJobContext;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.runtime.process.WorkItem;
@@ -81,8 +81,8 @@ public class ProtobufProcessMarshaller
     }
 
     public void writeProcessTimers(MarshallerWriteContext outCtx) throws IOException {
-        outCtx.writersByClass.put( ProcessJobContext.class, new TimerManager.ProcessTimerOutputMarshaller() );
-        outCtx.writersByClass.put( StartProcessJobContext.class, new TimerManager.ProcessTimerOutputMarshaller() );
+        outCtx.writersByClass.put( ProcessJobContext.class, new TimerManagerMarshallers.ProcessTimerOutputMarshaller() );
+        outCtx.writersByClass.put( StartProcessJobContext.class, new TimerManagerMarshallers.ProcessTimerOutputMarshaller() );
         ProtobufMessages.ProcessData.Builder _pdata = (ProtobufMessages.ProcessData.Builder) outCtx.parameterObject;
 
         TimerManager timerManager = ((InternalProcessRuntime) ((InternalWorkingMemory) outCtx.wm).getProcessRuntime()).getTimerManager();
@@ -137,7 +137,7 @@ public class ProtobufProcessMarshaller
 
     public void readProcessTimers(MarshallerReaderContext inCtx) throws IOException,
                                                                 ClassNotFoundException {
-        inCtx.readersByInt.put( ProtobufMessages.Timers.TimerType.PROCESS_VALUE, new TimerManager.ProcessTimerInputMarshaller() );
+        inCtx.readersByInt.put( ProtobufMessages.Timers.TimerType.PROCESS_VALUE, new TimerManagerMarshallers.ProcessTimerInputMarshaller() );
         ProtobufMessages.ProcessData _pdata = (ProtobufMessages.ProcessData) inCtx.parameterObject;
 
         TimerManager timerManager = ((InternalProcessRuntime) ((InternalWorkingMemory) inCtx.wm).getProcessRuntime()).getTimerManager();
